@@ -2,8 +2,7 @@
 
 let circles = [];
 const circleVelocity = { x: 1, y: 0 };
-const circleLifetime = 6000;
-let currentPatternMultiplier = 1;
+const circleLifetime = 15000;
 const colors = [
   "#F44336",
   "#E91E63",
@@ -31,14 +30,11 @@ function createCircle(windowInfo) {
   }
 }
 
-function updateCirclePosition(circle, multiplier) {
-  circle.position.x += circle.velocity.x * multiplier;
-}
-
 function updateCircles() {
-  circles.forEach((circle) =>
-    updateCirclePosition(circle, currentPatternMultiplier)
-  );
+  circles = circles.map((circle) => {
+    circle.position.x += circle.velocity.x;
+    return circle;
+  });
 }
 
 function sendCirclePositions(wss, clientWindowInfo, isOpen) {
