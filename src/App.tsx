@@ -70,7 +70,7 @@ const App: React.FC = () => {
             key={index}
             cx={circle.x}
             cy={circle.y}
-            r={50}
+            r={100}
             fill={circle.color}
           />
         ))}

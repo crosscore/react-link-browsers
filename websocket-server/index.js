@@ -9,7 +9,7 @@ const {
 } = require("./circleMotion");
 
 const PORT = 8080;
-const CREATE_CIRCLE_INTERVAL = 500;
+const CREATE_CIRCLE_INTERVAL = 5000;
 const UPDATE_CIRCLE_POSITION_INTERVAL = 9;
 const REMOVE_OLD_CIRCLES_INTERVAL = 1000;
 

@@ -1,7 +1,7 @@
 // websocket-server/circleMotion.js
 
 let circles = [];
-const circleVelocity = { x: 4, y: 0 };
+const circleVelocity = { x: 1, y: 0 };
 const circleLifetime = 6000;
 let currentPatternMultiplier = 1;
 const colors = [
