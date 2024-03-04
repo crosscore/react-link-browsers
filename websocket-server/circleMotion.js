@@ -1,12 +1,11 @@
 // websocket-server/circleMotion.js
 
-let circle = { x: -100, y: 300, velocity: 1 };
+let circle = { x: -100, y: 300, velocity: 1, radius: 100 };
 const circleLifetime = 10000;
-const circleRadius = 100;
 
 function createCircle(totalWidth) {
   if (!circle || circle.x > totalWidth) {
-    circle = { x: -100, y: 300, velocity: 1 };
+    circle = { x: -100, y: 300, velocity: 1, radius: circle.radius }; 
     setTimeout(() => circle = null, circleLifetime);
   }
 }
@@ -19,27 +18,27 @@ function updateCircles() {
 
 function sendCirclePositions(wss, isOpen, clientWidths, clients) {
   if (!circle) return;
-  let cumulativeWidth = 0; // cumulative width of all connected clients
+  let cumulativeWidth = 0;
 
   wss.clients.forEach((client, index) => {
-    const clientId = clients.get(client); // get the client ID from the clients(Map) object
+    const clientId = clients.get(client);
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) return;
 
     const clientWidth = clientWidths.get(clientId);
-    if (circle.x + circleRadius >= cumulativeWidth && circle.x - circleRadius < cumulativeWidth + clientWidth) {
+    if (circle.x + circle.radius >= cumulativeWidth && circle.x - circle.radius < cumulativeWidth + clientWidth) {
       client.send(JSON.stringify({
         type: 'updateCircle',
-        data: { x: circle.x - cumulativeWidth, y: circle.y },
+        data: { x: circle.x - cumulativeWidth, y: circle.y, radius: circle.radius }, 
       }));
     } else {
       client.send(JSON.stringify({
         type: 'updateCircle',
-        data: { x: -100, y: circle.y },
+        data: { x: -100, y: circle.y, radius: circle.radius }, 
       }));
     }
-    cumulativeWidth += clientWidth; // update the cumulative width for the next iteration
+    cumulativeWidth += clientWidth;
   });
 }
 
-
 module.exports = { createCircle, updateCircles, sendCirclePositions };
+
