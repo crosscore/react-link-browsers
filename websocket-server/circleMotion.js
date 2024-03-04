@@ -25,15 +25,13 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
     const clientId = clients.get(client); // get the client ID by clients map
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) return;
 
-  
-
     const clientWidth = clientWidths.get(clientId);
     if (circle.x >= cumulativeWidth && circle.x < cumulativeWidth + clientWidth) {
       client.send(JSON.stringify({
         type: 'updateCircle',
         data: { x: circle.x - cumulativeWidth, y: circle.y },
       }));
-    } else { // if the circle is outside the client's viewport, send a message to hide it
+    } else { // if the circle is outside the client's viewport, send a position that will make it disappear
       client.send(JSON.stringify({
         type: 'updateCircle',
         data: { x: -100, y: circle.y },
