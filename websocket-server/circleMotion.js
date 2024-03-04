@@ -1,70 +1,47 @@
 // websocket-server/circleMotion.js
 
-let circles = [];
-const circleVelocity = { x: 1, y: 0 };
-const circleLifetime = 15000;
-const colors = [
-  "#F44336",
-  "#E91E63",
-  "#9C27B0",
-  "#673AB7",
-  "#3F51B5",
-  "#2196F3",
-];
-let currentColorIndex = 0;
+let circle = { x: -50, y: 300, velocity: 1 };
+const circleLifetime = 10000;
+const circleRadius = 50;
 
-function createCircle(windowInfo) {
-  if (windowInfo.width > 0) {
-    console.log(`windowInfo: ${JSON.stringify(windowInfo)}`);
-    const initialCirclePosition = { x: 0, y: windowInfo.innerHeight / 2 };
-    const color = colors[currentColorIndex];
-    currentColorIndex = (currentColorIndex + 1) % colors.length;
-    const createTime = Date.now();
-    circles.push({
-      position: { ...initialCirclePosition },
-      velocity: circleVelocity,
-      createTime,
-      color,
-    });
-    console.log(`create circle.color: ${color}`);
+function createCircle(totalWidth) {
+  if (!circle || circle.x > totalWidth) {
+    circle = { x: -50, y: 300, velocity: 1 };
+    setTimeout(() => circle = null, circleLifetime);
   }
 }
 
 function updateCircles() {
-  circles = circles.map((circle) => {
-    circle.position.x += circle.velocity.x;
-    return circle;
-  });
+  if (circle) {
+    circle.x += circle.velocity;
+  }
 }
 
-function sendCirclePositions(wss, clientWindowInfo, isOpen) {
-  wss.clients.forEach((client) => {
-    if (isOpen(client)) {
-      const clientInfo = clientWindowInfo.get(client);
-      if (clientInfo) {
-        const { x: baseX } = clientInfo;
-        const positions = circles.map((circle) => ({
-          x: circle.position.x + baseX,
-          y: circle.position.y,
-          color: circle.color,
-        }));
-        client.send(JSON.stringify(positions));
-      }
+function sendCirclePositions(wss, isOpen, clientWidths, clients) {
+  if (!circle) return;
+  let cumulativeWidth = 0;
+
+  wss.clients.forEach(client => {
+    const clientId = clients.get(client); // get the client ID by clients map
+    if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) return;
+
+  
+
+    const clientWidth = clientWidths.get(clientId);
+    if (circle.x >= cumulativeWidth && circle.x < cumulativeWidth + clientWidth) {
+      client.send(JSON.stringify({
+        type: 'updateCircle',
+        data: { x: circle.x - cumulativeWidth, y: circle.y },
+      }));
+    } else { // if the circle is outside the client's viewport, send a message to hide it
+      client.send(JSON.stringify({
+        type: 'updateCircle',
+        data: { x: -100, y: circle.y },
+      }));
     }
+
+    cumulativeWidth += clientWidth;
   });
 }
 
-function removeOldCircles() {
-  const currentTime = Date.now();
-  circles = circles.filter(
-    (circle) => currentTime - circle.createTime <= circleLifetime
-  );
-}
-
-module.exports = {
-  createCircle,
-  updateCircles,
-  sendCirclePositions,
-  removeOldCircles,
-  circles,
-};
+module.exports = { createCircle, updateCircles, sendCirclePositions };
