@@ -1,13 +1,13 @@
 // websocket-server/circleMotion.js
 
 let circle = null;
-const circleLifetime = 10000;
-const circleRadius = 100;
+const circleLifetime = 8000;
+const circleRadius = 200;
 
 function createCircle(totalWidth) {
   console.log('createCircle');
   if (!circle || circle.x > totalWidth) {
-    circle = { x: -100, y: 300, velocity: 3, radius: circleRadius };
+    circle = { x: -circleRadius, y: 300, velocity: 5, radius: circleRadius };
     setTimeout(() => circle = null, circleLifetime);
   }
 }
@@ -27,6 +27,7 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) return;
 
     const clientWidth = clientWidths.get(clientId);
+
     if (circle.x + circle.radius >= cumulativeWidth && circle.x - circle.radius < cumulativeWidth + clientWidth) {
       client.send(JSON.stringify({
         type: 'updateCircle',
