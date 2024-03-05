@@ -1,27 +1,42 @@
 // src/App.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 const WEBSOCKET_URL = "ws://localhost:8080";
 
 const App = () => {
   const [circle, setCircle] = useState({ x: 0, y: 0, radius: 0, visible: false });
+  const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    const ws = new WebSocket(WEBSOCKET_URL);
+    const connectWebSocket = () => {
+      ws.current = new WebSocket(WEBSOCKET_URL);
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({ type: "windowInfo", data: { innerWidth: window.innerWidth } }));
-    };
-
-    ws.onmessage = (event) => {
-      const message = JSON.parse(event.data);
-      if (message.type === "updateCircle") {
-        const { x, y, radius } = message.data;
-        setCircle({ x, y, radius, visible: x >= 0 });
+      if (ws.current) {
+        ws.current.onopen = () => {
+          if (ws.current?.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ type: "windowInfo", data: { innerWidth: window.innerWidth } }));
+          }
+        };
+        ws.current.onmessage = (event) => {
+          const message = JSON.parse(event.data);
+          if (message.type === "updateCircle") {
+            const { x, y, radius } = message.data;
+            setCircle({ x, y, radius, visible: x + radius > 0 });
+          }
+        };
+        ws.current.onclose = () => {
+          console.log("WebSocket connection closed.");
+        };
       }
     };
 
-    return () => ws.close();
+    setTimeout(connectWebSocket, 1);
+
+    return () => {
+      if (ws.current) {
+        ws.current.close();
+      }
+    };
   }, []);
 
   return (
