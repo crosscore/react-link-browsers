@@ -1,8 +1,7 @@
 // websocket-server/circleMotion.js
 
-// let circle = { x: -100, y: 300, velocity: 3, radius: 100 };
 let circle = null;
-const circleLifetime = 6000;
+const circleLifetime = 10000;
 const circleRadius = 100;
 
 function createCircle(totalWidth) {
@@ -43,4 +42,8 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
   });
 }
 
-module.exports = { createCircle, updateCircles, sendCirclePositions };
+function isCirclePresent() {
+  return circle !== null;
+}
+
+module.exports = { createCircle, updateCircles, sendCirclePositions, isCirclePresent };
