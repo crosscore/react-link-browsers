@@ -18,12 +18,12 @@ wss.on('connection', (ws) => {
   ws.on('message', (message) => {
     const msg = JSON.parse(message);
     if (msg.type === 'windowInfo') {
-      console.log(`Client ${clientId} sent windowInfo: ${msg.data.innerWidth}`);
       clientWidths.set(clientId, msg.data.innerWidth);
       if (!updatesIntervalId) {
         createCircle(getTotalWidth(clientWidths));
         startCircleUpdatesAndTransmissions();
       }
+      console.log('clientWidths', clientWidths);
     }
   });
 
