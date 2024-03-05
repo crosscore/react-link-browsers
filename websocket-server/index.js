@@ -1,7 +1,7 @@
 // websocket-server/index.js
-const WebSocket = require('ws');
-const { v4: uuidv4 } = require('uuid');
-const { createCircle, updateCircles, sendCirclePositions } = require('./circleMotion');
+const WebSocket = require("ws");
+const { v4: uuidv4 } = require("uuid");
+const { createCircle, updateCircles, sendCirclePositions} = require("./circleMotion");
 
 const PORT = 8080;
 const wss = new WebSocket.Server({ port: PORT });
@@ -9,32 +9,46 @@ const clientWidths = new Map();
 const clients = new Map();
 
 const isOpen = (ws) => ws.readyState === WebSocket.OPEN;
+let circleUpdatesStarted = false;
 
-wss.on('connection', (ws) => {
+wss.on("connection", (ws) => {
   const clientId = uuidv4();
-  clients.set(ws, clientId); // associates the client with the client ID
+  clients.set(ws, clientId);
   console.log(`Client ${clientId} connected`);
 
-  ws.on('message', (message) => {
+  ws.on("message", (message) => {
     const msg = JSON.parse(message);
-    if (msg.type === 'windowInfo') {
+    if (msg.type === "windowInfo") {
       clientWidths.set(clientId, msg.data.innerWidth);
+      if (!circleUpdatesStarted) {
+        circleUpdatesStarted = true;
+        startCircleUpdatesAndTransmissions();
+      }
     }
   });
 
-  ws.on('close', () => {
+  ws.on("close", () => {
     console.log(`Client ${clientId} disconnected`);
     clientWidths.delete(clientId);
     clients.delete(ws);
   });
 });
 
-const updateAndSendCirclePositions = () => {
-  updateCircles();
-  sendCirclePositions(wss, isOpen, clientWidths, clients);
-};
+createCircle(getTotalWidth(clientWidths));
 
-setInterval(updateAndSendCirclePositions, 16);
-setInterval(() => createCircle(clientWidths), 5000);
+function startCircleUpdatesAndTransmissions() {
+  setInterval(() => {
+    updateCircles();
+    sendCirclePositions(wss, isOpen, clientWidths, clients);
+  }, 16);
+  setInterval(() => createCircle(getTotalWidth(clientWidths)),6000);
+}
 
+function getTotalWidth(clientWidths) {
+  let totalWidth = 0;
+  clientWidths.forEach((width) => (totalWidth += width));
+  return totalWidth;
+}
+
+startCircleUpdatesAndTransmissions();
 console.log(`WebSocket server started on ws://localhost:${PORT}`);
