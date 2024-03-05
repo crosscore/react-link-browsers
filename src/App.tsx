@@ -32,10 +32,16 @@ const App = () => {
 
     setTimeout(connectWebSocket, 1);
 
+    const handleResize = () => {
+      const widthInfo = JSON.stringify({ type: "windowInfo", data: { innerWidth: window.innerWidth } });
+      ws.current?.send(widthInfo);
+    };
+
+    window.addEventListener("resize", handleResize);
+    
     return () => {
-      if (ws.current) {
-        ws.current.close();
-      }
+      window.removeEventListener("resize", handleResize);
+      ws.current?.close();
     };
   }, []);
 
