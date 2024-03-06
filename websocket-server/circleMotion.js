@@ -2,13 +2,13 @@
 
 let circle = null;
 const circleLifetime = 8000;
-const circleRadius = 200;
+const circleRadius = 100;
 
 function createCircle(totalWidth) {
-  console.log('createCircle');
+  console.log("createCircle");
   if (!circle || circle.x > totalWidth) {
     circle = { x: -circleRadius, y: 300, velocity: 5, radius: circleRadius };
-    setTimeout(() => circle = null, circleLifetime);
+    setTimeout(() => (circle = null), circleLifetime);
   }
 }
 
@@ -27,17 +27,28 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) return;
 
     const clientWidth = clientWidths.get(clientId);
-
-    if (circle.x + circle.radius >= cumulativeWidth && circle.x - circle.radius < cumulativeWidth + clientWidth) {
-      client.send(JSON.stringify({
-        type: 'updateCircle',
-        data: { x: circle.x - cumulativeWidth, y: circle.y, radius: circle.radius },
-      }));
+    // 
+    if (
+      circle.x + circle.radius >= cumulativeWidth &&
+      circle.x - circle.radius < cumulativeWidth + clientWidth
+    ) {
+      client.send(
+        JSON.stringify({
+          type: "updateCircle",
+          data: {
+            x: circle.x - cumulativeWidth,
+            y: circle.y,
+            radius: circle.radius,
+          },
+        })
+      );
     } else {
-      client.send(JSON.stringify({
-        type: 'updateCircle',
-        data: { x: -500, y: circle.y, radius: circle.radius },
-      }));
+      client.send(
+        JSON.stringify({
+          type: "updateCircle",
+          data: { x: -1000, y: circle.y, radius: circle.radius },
+        })
+      );
     }
     cumulativeWidth += clientWidth;
   });
@@ -47,4 +58,9 @@ function isCirclePresent() {
   return circle !== null;
 }
 
-module.exports = { createCircle, updateCircles, sendCirclePositions, isCirclePresent };
+module.exports = {
+  createCircle,
+  updateCircles,
+  sendCirclePositions,
+  isCirclePresent,
+};

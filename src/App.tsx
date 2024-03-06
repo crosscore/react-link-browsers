@@ -14,6 +14,7 @@ const App = () => {
       if (ws.current) {
         ws.current.onopen = () => {
           if (ws.current?.readyState === WebSocket.OPEN) {
+            console.log(`ws.current.readyState: ${ws.current.readyState}`);
             ws.current.send(JSON.stringify({ type: "windowInfo", data: { innerWidth: window.innerWidth } }));
           }
         };
@@ -25,7 +26,7 @@ const App = () => {
           }
         };
         ws.current.onclose = () => {
-          console.log("WebSocket connection closed.");
+          console.log(`ws.current.readyState: ${ws.current?.readyState}`);
         };
       }
     };

@@ -23,7 +23,7 @@ wss.on('connection', (ws) => {
         createCircle(getTotalWidth(clientWidths));
         startCircleUpdatesAndTransmissions();
       }
-      console.log('clientWidths', clientWidths);
+      console.log('clientWidths: ', clientWidths);
     }
   });
 
