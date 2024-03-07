@@ -23,21 +23,33 @@ const App = () => {
         ws.current.onopen = () => {
           if (ws.current?.readyState === WebSocket.OPEN) {
             console.log(`ws.current.readyState: ${ws.current.readyState}`);
-            ws.current.send(JSON.stringify({ type: "windowInfo", data: { innerWidth: window.innerWidth } }));
+            ws.current.send(
+              JSON.stringify({
+                type: "windowInfo",
+                data: { innerWidth: window.innerWidth },
+              })
+            );
           }
         };
         ws.current.onmessage = (event) => {
           const message = JSON.parse(event.data);
           if (message.type === "updateCircle") {
             const { id, x, y, radius } = message.data;
-            setCircles(prevCircles => {
-              const index = prevCircles.findIndex(circle => circle.id === id);
+            setCircles((prevCircles) => {
+              const index = prevCircles.findIndex((circle) => circle.id === id);
+              const visible = x + radius > 0 && x - radius < window.innerWidth;
               if (index !== -1) {
                 const updatedCircles = [...prevCircles];
-                updatedCircles[index] = { ...updatedCircles[index], x, y, radius, visible: x + radius > 0 };
+                updatedCircles[index] = {
+                  ...updatedCircles[index],
+                  x,
+                  y,
+                  radius,
+                  visible,
+                };
                 return updatedCircles;
               } else {
-                return [...prevCircles, { id, x, y, radius, visible: x + radius > 0 }];
+                return [...prevCircles, { id, x, y, radius, visible }];
               }
             });
           }
@@ -51,7 +63,10 @@ const App = () => {
     setTimeout(connectWebSocket, 1);
 
     const handleResize = () => {
-      const widthInfo = JSON.stringify({ type: "windowInfo", data: { innerWidth: window.innerWidth } });
+      const widthInfo = JSON.stringify({
+        type: "windowInfo",
+        data: { innerWidth: window.innerWidth },
+      });
       ws.current?.send(widthInfo);
     };
 
@@ -64,24 +79,28 @@ const App = () => {
   }, []);
 
   return (
-    <div className="App" style={{ position: "relative", height: "100vh" }}>
-      {circles.map(circle => (
-        circle.visible && (
-          <div
-            key={circle.id}
-            style={{
-              width: `${circle.radius * 2}px`,
-              height: `${circle.radius * 2}px`,
-              borderRadius: "50%",
-              backgroundColor: "#47b0dc",
-              position: "absolute",
-              left: `${circle.x}px`,
-              top: `${circle.y}px`,
-              transform: "translate(-50%, -50%)",
-            }}
-          ></div>
-        )
-      ))}
+    <div
+      className="App"
+      style={{ position: "relative", height: "100vh", overflow: "hidden" }}
+    >
+      {circles.map(
+        (circle) =>
+          circle.visible && (
+            <div
+              key={circle.id}
+              style={{
+                width: `${circle.radius * 2}px`,
+                height: `${circle.radius * 2}px`,
+                borderRadius: "50%",
+                backgroundColor: "#47b0dc",
+                position: "absolute",
+                left: `${circle.x}px`,
+                top: `${circle.y}px`,
+                transform: "translate(-50%, -50%)",
+              }}
+            ></div>
+          )
+      )}
     </div>
   );
 };

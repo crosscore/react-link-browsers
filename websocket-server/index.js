@@ -1,3 +1,5 @@
+// websocket-server/index.js
+
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 const { generateCircles, updateCircles, sendCirclePositions } = require('./circleMotion');
@@ -42,7 +44,10 @@ function getTotalWidth(clientWidths) {
 }
 
 function startCircleUpdatesAndTransmissions() {
-  setInterval(() => {
+  if (updatesIntervalId !== null) {
+    clearInterval(updatesIntervalId);
+  }
+  updatesIntervalId = setInterval(() => {
     updateCircles();
     sendCirclePositions(wss, isOpen, clientWidths, clients);
   }, 16);
