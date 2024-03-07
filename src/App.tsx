@@ -3,8 +3,16 @@ import React, { useEffect, useState, useRef } from "react";
 
 const WEBSOCKET_URL = "ws://localhost:8080";
 
+interface Circle {
+  id: number;
+  x: number;
+  y: number;
+  radius: number;
+  visible: boolean;
+}
+
 const App = () => {
-  const [circle, setCircle] = useState({ x: 0, y: 0, radius: 0, visible: false });
+  const [circles, setCircles] = useState<Circle[]>([]);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -21,8 +29,17 @@ const App = () => {
         ws.current.onmessage = (event) => {
           const message = JSON.parse(event.data);
           if (message.type === "updateCircle") {
-            const { x, y, radius } = message.data;
-            setCircle({ x, y, radius, visible: x + radius > 0 });
+            const { id, x, y, radius } = message.data;
+            setCircles(prevCircles => {
+              const index = prevCircles.findIndex(circle => circle.id === id);
+              if (index !== -1) {
+                const updatedCircles = [...prevCircles];
+                updatedCircles[index] = { ...updatedCircles[index], x, y, radius, visible: x + radius > 0 };
+                return updatedCircles;
+              } else {
+                return [...prevCircles, { id, x, y, radius, visible: x + radius > 0 }];
+              }
+            });
           }
         };
         ws.current.onclose = () => {
@@ -39,7 +56,7 @@ const App = () => {
     };
 
     window.addEventListener("resize", handleResize);
-    
+
     return () => {
       window.removeEventListener("resize", handleResize);
       ws.current?.close();
@@ -48,20 +65,23 @@ const App = () => {
 
   return (
     <div className="App" style={{ position: "relative", height: "100vh" }}>
-      {circle.visible && (
-        <div
-          style={{
-            width: `${circle.radius * 2}px`,
-            height: `${circle.radius * 2}px`,
-            borderRadius: "50%",
-            backgroundColor: "#47b0dc",
-            position: "absolute",
-            left: `${circle.x}px`,
-            top: `${circle.y}px`,
-            transform: "translate(-50%, -50%)",
-          }}
-        ></div>
-      )}
+      {circles.map(circle => (
+        circle.visible && (
+          <div
+            key={circle.id}
+            style={{
+              width: `${circle.radius * 2}px`,
+              height: `${circle.radius * 2}px`,
+              borderRadius: "50%",
+              backgroundColor: "#47b0dc",
+              position: "absolute",
+              left: `${circle.x}px`,
+              top: `${circle.y}px`,
+              transform: "translate(-50%, -50%)",
+            }}
+          ></div>
+        )
+      ))}
     </div>
   );
 };

@@ -1,7 +1,6 @@
-// websocket-server/index.js
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
-const { createCircle, updateCircles, sendCirclePositions, isCirclePresent } = require('./circleMotion');
+const { generateCircles, updateCircles, sendCirclePositions } = require('./circleMotion');
 
 const PORT = 8080;
 const wss = new WebSocket.Server({ port: PORT });
@@ -9,6 +8,8 @@ const clientWidths = new Map();
 const clients = new Map();
 const isOpen = (ws) => ws.readyState === WebSocket.OPEN;
 let updatesIntervalId = null;
+
+generateCircles(getTotalWidth(clientWidths));
 
 wss.on('connection', (ws) => {
   const clientId = uuidv4();
@@ -20,10 +21,8 @@ wss.on('connection', (ws) => {
     if (msg.type === 'windowInfo') {
       clientWidths.set(clientId, msg.data.innerWidth);
       if (!updatesIntervalId) {
-        createCircle(getTotalWidth(clientWidths));
         startCircleUpdatesAndTransmissions();
       }
-      console.log('clientWidths: ', clientWidths);
     }
   });
 
@@ -31,6 +30,10 @@ wss.on('connection', (ws) => {
     console.log(`Client ${clientId} disconnected`);
     clientWidths.delete(clientId);
     clients.delete(ws);
+    if (clients.size === 0) {
+      clearInterval(updatesIntervalId);
+      updatesIntervalId = null;
+    }
   });
 });
 
@@ -39,13 +42,12 @@ function getTotalWidth(clientWidths) {
 }
 
 function startCircleUpdatesAndTransmissions() {
-  updatesIntervalId = setInterval(() => {
+  setInterval(() => {
     updateCircles();
     sendCirclePositions(wss, isOpen, clientWidths, clients);
-    if (!isCirclePresent()) {
-      createCircle(getTotalWidth(clientWidths));
-    }
   }, 16);
 }
+
+startCircleUpdatesAndTransmissions();
 
 console.log(`WebSocket server started on ws://localhost:${PORT}`);
