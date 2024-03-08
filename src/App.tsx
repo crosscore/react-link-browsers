@@ -12,6 +12,13 @@ interface Circle {
   visible: boolean;
 }
 
+interface PiDigit {
+  id: number;
+  digit: string;
+  x: number;
+  y: number;
+}
+
 const colors = [
   "#F44336",
   "#E91E63",
@@ -29,6 +36,8 @@ const colors = [
 
 const App = () => {
   const [circles, setCircles] = useState<Circle[]>([]);
+  const [piDigits, setPiDigits] = useState<PiDigit[]>([]);
+  const [displayCircles, setDisplayCircles] = useState(true); // State to toggle between circles and strings
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -70,6 +79,20 @@ const App = () => {
                 return [...prevCircles, { id, x, y, radius, color: colors[colorIndex], visible }];
               }
             });
+          } else if (message.type === "updatePiDigit") {
+            const { id, digit, x, y } = message.data;
+            setPiDigits((prevDigits) => {
+              const digitIndex = prevDigits.findIndex((d) => d.id === id);
+              if (digitIndex !== -1) {
+                // 既存の数字を更新
+                const updatedDigits = [...prevDigits];
+                updatedDigits[digitIndex] = { ...updatedDigits[digitIndex], digit, x, y };
+                return updatedDigits;
+              } else {
+                // 新しい数字を追加
+                return [...prevDigits, { id, digit, x, y }];
+              }
+            });
           }
         };
         ws.current.onclose = () => {
@@ -96,28 +119,59 @@ const App = () => {
     };
   }, []);
 
+  const toggleDisplay = () => {
+    setDisplayCircles(!displayCircles);
+  };
+
   return (
     <div
       className="App"
       style={{ position: "relative", height: "100vh", overflow: "hidden" }}
     >
-      {circles.map(
-        (circle) =>
-          circle.visible && (
+      <button
+        onClick={toggleDisplay}
+        style={{ position: "absolute", right: 20, top: 20, zIndex: 1000 }}
+      >
+        {displayCircles ? "Strings" : "Circles"}
+      </button>
+      {displayCircles ? (
+        <>
+          {circles.map(
+            (circle) =>
+              circle.visible && (
+                <div
+                  key={circle.id}
+                  style={{
+                    width: `${circle.radius * 2}px`,
+                    height: `${circle.radius * 2}px`,
+                    borderRadius: "50%",
+                    backgroundColor: circle.color,
+                    position: "absolute",
+                    left: `${circle.x}px`,
+                    top: `${circle.y}px`,
+                    transform: "translate(-50%, -50%)",
+                  }}
+                ></div>
+              )
+          )}
+        </>
+      ) : (
+        <>
+          {piDigits.map((digit, index) => (
             <div
-              key={circle.id}
+              key={index}
               style={{
-                width: `${circle.radius * 2}px`,
-                height: `${circle.radius * 2}px`,
-                borderRadius: "50%",
-                backgroundColor: circle.color,
                 position: "absolute",
-                left: `${circle.x}px`,
-                top: `${circle.y}px`,
-                transform: "translate(-50%, -50%)",
+                left: `${digit.x}px`,
+                top: `${digit.y}px`,
+                fontSize: "20px",
+                fontFamily: "Monospace",
               }}
-            ></div>
-          )
+            >
+              {digit.digit}
+            </div>
+          ))}
+        </>
       )}
     </div>
   );
