@@ -2,16 +2,16 @@
 
 let circles = [];
 const circleLifetime = 12000;
-const circleRadius = 100;
+const circleRadius = 60;
 let nextCircleId = 0;
 
 function createCircle(totalWidth) {
-  console.log("createCircle");
+  //console.log("createCircle");
   const newCircle = {
     id: nextCircleId++,
     x: -circleRadius,
     y: 300,
-    velocity: 5,
+    velocity: 3,
     radius: circleRadius,
   };
   circles.push(newCircle);
@@ -45,7 +45,7 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
         circle.x + circle.radius > cumulativeWidth &&
         circle.x - circle.radius < cumulativeWidth + clientWidth * 2
       ) {
-        console.log(`Sending circle ${circle.id} to client ${clientId}`);
+        //console.log(`Sending circle ${circle.id} to client ${clientId}`);
         client.send(
           JSON.stringify({
             type: "updateCircle",
