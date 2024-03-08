@@ -8,8 +8,18 @@ interface Circle {
   x: number;
   y: number;
   radius: number;
+  color: string;
   visible: boolean;
 }
+
+const colors = [
+  "#F44336",
+  "#E91E63",
+  "#9C27B0",
+  "#673AB7",
+  "#3F51B5",
+  "#2196F3",
+];
 
 const App = () => {
   const [circles, setCircles] = useState<Circle[]>([]);
@@ -38,6 +48,7 @@ const App = () => {
             setCircles((prevCircles) => {
               const index = prevCircles.findIndex((circle) => circle.id === id);
               const visible = x + radius > 0 && x - radius < window.innerWidth;
+              const colorIndex = id % colors.length;
               if (index !== -1) {
                 const updatedCircles = [...prevCircles];
                 updatedCircles[index] = {
@@ -45,11 +56,12 @@ const App = () => {
                   x,
                   y,
                   radius,
+                  color: colors[colorIndex],
                   visible,
                 };
                 return updatedCircles;
               } else {
-                return [...prevCircles, { id, x, y, radius, visible }];
+                return [...prevCircles, { id, x, y, radius, color: colors[colorIndex], visible }];
               }
             });
           }
@@ -92,7 +104,7 @@ const App = () => {
                 width: `${circle.radius * 2}px`,
                 height: `${circle.radius * 2}px`,
                 borderRadius: "50%",
-                backgroundColor: "#47b0dc",
+                backgroundColor: circle.color,
                 position: "absolute",
                 left: `${circle.x}px`,
                 top: `${circle.y}px`,

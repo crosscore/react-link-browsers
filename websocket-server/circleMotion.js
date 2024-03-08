@@ -1,7 +1,7 @@
 // websocket-server/circleMotion.js
 
 let circles = [];
-const circleLifetime = 6000;
+const circleLifetime = 12000;
 const circleRadius = 100;
 let nextCircleId = 0;
 
