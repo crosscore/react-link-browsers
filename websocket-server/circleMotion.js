@@ -6,7 +6,6 @@ const circleRadius = 60;
 let nextCircleId = 0;
 
 function createCircle(totalWidth) {
-  //console.log("createCircle");
   const newCircle = {
     id: nextCircleId++,
     x: -circleRadius,
@@ -15,6 +14,7 @@ function createCircle(totalWidth) {
     radius: circleRadius,
   };
   circles.push(newCircle);
+  console.log(`Created circle ${newCircle.id}`);
   setTimeout(() => {
     circles = circles.filter((circle) => circle.id !== newCircle.id);
   }, circleLifetime);
