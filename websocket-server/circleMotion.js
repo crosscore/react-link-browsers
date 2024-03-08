@@ -63,15 +63,9 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
   });
 }
 
-function getCirclesCount() {
-  console.log(`circles.length: ${circles.length}`);
-  return circles.length;
-}
-
 module.exports = {
   createCircle,
   generateCircles,
   updateCircles,
   sendCirclePositions,
-  getCirclesCount,
 };
