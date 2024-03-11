@@ -1,5 +1,6 @@
 // websocket-server/stringMotion.js
 
+// stringMotion.js
 let piDigits = [];
 let nextPiDigitId = 0;
 const digitWidth = 20;
@@ -18,6 +19,7 @@ function generatePiDigits() {
       x: -digitWidth,
       y: 200,
       velocity: digitVelocity,
+      clientId: null, // clientIdをnullに初期化
     });
   }
 }
@@ -37,18 +39,20 @@ function updatePiDigitsPosition(clientWidths) {
 function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
   let cumulativeWidth = 0;
 
-  wss.clients.forEach((client) => {
-    const clientId = clients.get(client);
+  wss.clients.forEach((ws) => {
+    const clientId = clients.get(ws);
     if (!clientId) {
-      console.log('No clientId found for client');
+      console.log('No clientId found for WebSocket instance');
       return;
     }
+
     const clientWidth = clientWidths.get(clientId);
     if (!clientWidth) {
       console.log(`No clientWidth found for clientId: ${clientId}`);
       return;
     }
-    if (!isOpen(client)) {
+
+    if (!isOpen(ws)) {
       console.log(`Client ${clientId} is closed`);
       return;
     }
@@ -56,12 +60,13 @@ function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
     piDigits.forEach((digit, index) => {
       const previousDigit = index > 0 ? piDigits[index - 1] : null;
       const previousClientWidth = previousDigit ? clientWidths.get(clients.get(previousDigit.clientId)) : 0;
+
       if (
         digit.x + digitWidth > cumulativeWidth &&
         digit.x - digitWidth < cumulativeWidth + clientWidth
       ) {
         const adjustedX = digit.x - cumulativeWidth + (previousDigit ? previousClientWidth : 0);
-        client.send(
+        ws.send(
           JSON.stringify({
             type: "updatePiDigit",
             data: {
@@ -73,7 +78,9 @@ function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
             },
           })
         );
-        digit.clientId = client;
+        digit.clientId = ws; // WebSocketインスタンスをclientIdに格納
+      } else {
+        digit.clientId = null; // 表示範囲外の場合はclientIdをnullに設定
       }
     });
     cumulativeWidth += clientWidth;
