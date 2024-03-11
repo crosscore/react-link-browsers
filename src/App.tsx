@@ -17,6 +17,7 @@ interface PiDigit {
   digit: string;
   x: number;
   y: number;
+  clientId?: string;
 }
 
 const colors = [
@@ -37,7 +38,7 @@ const colors = [
 const App = () => {
   const [circles, setCircles] = useState<Circle[]>([]);
   const [piDigits, setPiDigits] = useState<PiDigit[]>([]);
-  const [displayCircles, setDisplayCircles] = useState(true); // State to toggle between circles and strings
+  const [displayCircles, setDisplayCircles] = useState(true);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -50,8 +51,9 @@ const App = () => {
             console.log(`ws.current.readyState: ${ws.current.readyState}`);
             ws.current.send(
               JSON.stringify({
-                type: "windowInfo",
+                type: 'windowInfo',
                 data: { innerWidth: window.innerWidth },
+                headers: { 'x-client-width': window.innerWidth },
               })
             );
           }
@@ -80,17 +82,15 @@ const App = () => {
               }
             });
           } else if (message.type === "updatePiDigit") {
-            const { id, digit, x, y } = message.data;
+            const { id, digit, x, y, clientId } = message.data;
             setPiDigits((prevDigits) => {
               const digitIndex = prevDigits.findIndex((d) => d.id === id);
               if (digitIndex !== -1) {
-                // 既存の数字を更新
                 const updatedDigits = [...prevDigits];
-                updatedDigits[digitIndex] = { ...updatedDigits[digitIndex], digit, x, y };
+                updatedDigits[digitIndex] = { ...updatedDigits[digitIndex], digit, x, y, clientId };
                 return updatedDigits;
               } else {
-                // 新しい数字を追加
-                return [...prevDigits, { id, digit, x, y }];
+                return [...prevDigits, { id, digit, x, y, clientId }];
               }
             });
           }
@@ -164,8 +164,8 @@ const App = () => {
                 position: "absolute",
                 left: `${digit.x}px`,
                 top: `${digit.y}px`,
-                fontSize: "20px",
-                fontFamily: "Monospace",
+                fontSize: "40px",
+                fontFamily: "Fira Code",
               }}
             >
               {digit.digit}

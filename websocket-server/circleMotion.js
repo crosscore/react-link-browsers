@@ -14,7 +14,7 @@ function createCircle(totalWidth) {
     radius: circleRadius,
   };
   circles.push(newCircle);
-  console.log(`Created circle ${newCircle.id}`);
+  // console.log(`Created circle ${newCircle.id}`);
   setTimeout(() => {
     circles = circles.filter((circle) => circle.id !== newCircle.id);
   }, circleLifetime);

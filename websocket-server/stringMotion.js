@@ -2,59 +2,81 @@
 
 let piDigits = [];
 let nextPiDigitId = 0;
+const digitWidth = 20;
+const digitVelocity = 3;
 
-// 円周率の文字列から数字を生成
 function generatePiDigits() {
   const piString = Math.PI.toString().replace(".", "");
-  for (let i = 0; i < piString.length; i++) {
+  for (let i = 0; i < 50; i++) {
+    const digit =
+      i < piString.length
+        ? piString[i]
+        : Math.floor(Math.random() * 10).toString();
     piDigits.push({
       id: nextPiDigitId++,
-      digit: piString[i],
-      x: -10,
+      digit,
+      x: -digitWidth,
       y: 200,
-      velocity: 3,
+      velocity: digitVelocity,
     });
   }
 }
 
-// 数字の位置を更新
-function updatePiDigitsPosition() {
+function updatePiDigitsPosition(clientWidths) {
+  const maxClientWidth = Math.max(...clientWidths.values());
+
   piDigits.forEach((digit) => {
     digit.x += digit.velocity;
+
+    if (digit.x > maxClientWidth) {
+      digit.x = -digitWidth;
+    }
   });
-
-  piDigits = piDigits.filter((digit) => digit.x < 1300);
-
-  // 新しい数字を追加
-  if (piDigits.length < 50) {
-    piDigits.push({
-      id: nextPiDigitId++,
-      digit: Math.floor(Math.random() * 10).toString(),
-      x: -10,
-      y: 200,
-      velocity: 3,
-    });
-  }
 }
 
-// 数字の位置をクライアントに送信
-function sendPiDigitPositions(wss, isOpen, clients) {
-  piDigits.forEach((digit) => {
-    wss.clients.forEach((client) => {
-      if (isOpen(client)) {
+function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
+  let cumulativeWidth = 0;
+
+  wss.clients.forEach((client) => {
+    const clientId = clients.get(client);
+    if (!clientId) {
+      console.log('No clientId found for client');
+      return;
+    }
+    const clientWidth = clientWidths.get(clientId);
+    if (!clientWidth) {
+      console.log(`No clientWidth found for clientId: ${clientId}`);
+      return;
+    }
+    if (!isOpen(client)) {
+      console.log(`Client ${clientId} is closed`);
+      return;
+    }
+
+    piDigits.forEach((digit, index) => {
+      const previousDigit = index > 0 ? piDigits[index - 1] : null;
+      const previousClientWidth = previousDigit ? clientWidths.get(clients.get(previousDigit.clientId)) : 0;
+      if (
+        digit.x + digitWidth > cumulativeWidth &&
+        digit.x - digitWidth < cumulativeWidth + clientWidth
+      ) {
+        const adjustedX = digit.x - cumulativeWidth + (previousDigit ? previousClientWidth : 0);
         client.send(
           JSON.stringify({
             type: "updatePiDigit",
             data: {
               id: digit.id,
               digit: digit.digit,
-              x: digit.x,
+              x: adjustedX,
               y: digit.y,
+              clientId,
             },
           })
         );
+        digit.clientId = client;
       }
     });
+    cumulativeWidth += clientWidth;
   });
 }
 

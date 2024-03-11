@@ -18,13 +18,15 @@ generatePiDigits();
 
 wss.on('connection', (ws) => {
   const clientId = uuidv4();
+  clientWidths.set(clientId, 0)
   clients.set(ws, clientId);
   console.log(`Client ${clientId} connected`);
 
   ws.on('message', (message) => {
     const msg = JSON.parse(message);
     if (msg.type === 'windowInfo') {
-      clientWidths.set(clientId, msg.data.innerWidth);
+      const clientWidth = msg.headers['x-client-width'];
+      clientWidths.set(clientId, parseInt(clientWidth, 10));
       if (!updatesIntervalId) {
         startCircleUpdatesAndTransmissions();
       }
@@ -53,7 +55,7 @@ function startCircleUpdatesAndTransmissions() {
   updatesIntervalId = setInterval(() => {
     updateCircles();
     sendCirclePositions(wss, isOpen, clientWidths, clients);
-    updatePiDigitsPosition();
+    updatePiDigitsPosition(clientWidths);
     sendPiDigitPositions(wss, isOpen, clients, clientWidths);
   }, 16);
 }
