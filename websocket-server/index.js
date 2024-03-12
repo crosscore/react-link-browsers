@@ -4,6 +4,7 @@ const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 const { generateCircles, updateCircles, sendCirclePositions } = require('./circleMotion');
 const { generatePiDigits, updatePiDigitsPosition, sendPiDigitPositions } = require('./stringMotion');
+const { getTotalWidth } = require('./utils');
 
 const PORT = 8080;
 const wss = new WebSocket.Server({ port: PORT });
@@ -43,11 +44,6 @@ wss.on('connection', (ws) => {
   });
 });
 
-
-function getTotalWidth(clientWidths) {
-  return Array.from(clientWidths.values()).reduce((acc, width) => acc + width, 0);
-}
-
 function startCircleUpdatesAndTransmissions() {
   if (updatesIntervalId !== null) {
     clearInterval(updatesIntervalId);
@@ -55,7 +51,8 @@ function startCircleUpdatesAndTransmissions() {
   updatesIntervalId = setInterval(() => {
     updateCircles();
     sendCirclePositions(wss, isOpen, clientWidths, clients);
-    updatePiDigitsPosition(clientWidths);
+    const totalWidth = getTotalWidth(clientWidths);
+    updatePiDigitsPosition(totalWidth);
     sendPiDigitPositions(wss, isOpen, clientWidths, clients);
   }, 16);
 }
