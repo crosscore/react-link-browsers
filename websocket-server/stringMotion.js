@@ -1,9 +1,8 @@
 // websocket-server/stringMotion.js
 
-// stringMotion.js
 let piDigits = [];
 let nextPiDigitId = 0;
-const digitWidth = 20;
+const digitWidth = 200;
 const digitVelocity = 3;
 
 function generatePiDigits() {
@@ -19,7 +18,7 @@ function generatePiDigits() {
       x: -digitWidth,
       y: 200,
       velocity: digitVelocity,
-      clientId: null, // clientIdをnullに初期化
+      clientId: null,
     });
   }
 }
@@ -37,55 +36,41 @@ function updatePiDigitsPosition(clientWidths) {
 }
 
 function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
-  let cumulativeWidth = 0;
-
   wss.clients.forEach((ws) => {
+    if (!isOpen(ws)) {
+      console.log('WebSocket is not open');
+      return;
+    }
+
     const clientId = clients.get(ws);
-    if (!clientId) {
-      console.log('No clientId found for WebSocket instance');
+    if (clientId === undefined) {
+      console.log('No clientId found for an open WebSocket instance');
       return;
     }
 
     const clientWidth = clientWidths.get(clientId);
-    if (!clientWidth) {
+    if (clientWidth === undefined) {
       console.log(`No clientWidth found for clientId: ${clientId}`);
       return;
     }
 
-    if (!isOpen(ws)) {
-      console.log(`Client ${clientId} is closed`);
-      return;
-    }
-
-    piDigits.forEach((digit, index) => {
-      const previousDigit = index > 0 ? piDigits[index - 1] : null;
-      const previousClientWidth = previousDigit ? clientWidths.get(clients.get(previousDigit.clientId)) : 0;
-
-      if (
-        digit.x + digitWidth > cumulativeWidth &&
-        digit.x - digitWidth < cumulativeWidth + clientWidth
-      ) {
-        const adjustedX = digit.x - cumulativeWidth + (previousDigit ? previousClientWidth : 0);
-        ws.send(
-          JSON.stringify({
-            type: "updatePiDigit",
-            data: {
-              id: digit.id,
-              digit: digit.digit,
-              x: adjustedX,
-              y: digit.y,
-              clientId,
-            },
-          })
-        );
-        digit.clientId = ws; // WebSocketインスタンスをclientIdに格納
-      } else {
-        digit.clientId = null; // 表示範囲外の場合はclientIdをnullに設定
+    piDigits.forEach((digit) => {
+      if (digit.x + digitWidth > 0 && digit.x - digitWidth < clientWidth) {
+        ws.send(JSON.stringify({
+          type: "updatePiDigit",
+          data: {
+            id: digit.id,
+            digit: digit.digit,
+            x: digit.x,
+            y: digit.y,
+          },
+        }));
+        console.log(`Sending digit ${digit.digit} to client ${clientId}, x: ${digit.x}, y: ${digit.y}`);
       }
     });
-    cumulativeWidth += clientWidth;
   });
 }
+
 
 module.exports = {
   generatePiDigits,

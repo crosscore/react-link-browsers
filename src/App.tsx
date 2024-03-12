@@ -53,7 +53,6 @@ const App = () => {
               JSON.stringify({
                 type: 'windowInfo',
                 data: { innerWidth: window.innerWidth },
-                headers: { 'x-client-width': window.innerWidth },
               })
             );
           }
@@ -165,7 +164,7 @@ const App = () => {
                 left: `${digit.x}px`,
                 top: `${digit.y}px`,
                 fontSize: "40px",
-                fontFamily: "Fira Code",
+                fontFamily: "monospace",
               }}
             >
               {digit.digit}
