@@ -16,7 +16,6 @@ let updatesIntervalId = null;
 
 setFontSize(initialFontSize);
 generateCircles(getTotalWidth(clientWidths));
-generateCharactors();
 
 wss.on('connection', (ws) => {
   const clientId = uuidv4();
@@ -29,6 +28,10 @@ wss.on('connection', (ws) => {
         clientWidths.set(clientId, clientWidth);
         clients.set(ws, clientId);
         console.log(`Client ${clientId} width set to ${clientWidth}`);
+        if (clients.size === 1) { // 最初のクライアント接続時に限りgenerateCharactorsを呼び出す
+          const totalWidth = getTotalWidth(clientWidths);
+          generateCharactors(totalWidth); // totalWidthを引数として渡す
+        }
       } else {
         console.log(`Client ${clientId} has invalid width ${clientWidth}, ignoring this client.`);
       }
@@ -48,7 +51,7 @@ wss.on('connection', (ws) => {
   });
 });
 
-function startCircleUpdatesAndTransmissions() {
+function startUpdatesAndTransmissions() {
   if (updatesIntervalId !== null) {
     clearInterval(updatesIntervalId);
   }
@@ -61,6 +64,6 @@ function startCircleUpdatesAndTransmissions() {
   }, 16);
 }
 
-startCircleUpdatesAndTransmissions();
+startUpdatesAndTransmissions();
 
 console.log(`WebSocket server started on ws://localhost:${PORT}`);
