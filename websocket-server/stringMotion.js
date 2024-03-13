@@ -2,41 +2,41 @@
 
 let piDigits = [];
 let nextPiDigitId = 0;
-const fontSize = 360; // App.tsxから取得したフォントサイズを使用
+const fontSize = 360;
 const digitVelocity = 6;
 
 const piString = "Thank you for your attention! This is the first 100 digits of pi: 3.1415926535 8979323846 2643383279 5028841971 6939937510 5820974944 5923078164 0628620899 8628034825 3421170679 ";
 let currentStringIndex = 0;
 
-function createPiDigit() {
+function createCharacter() {
   if (currentStringIndex >= piString.length) {
-    currentStringIndex = 0; // 文字列の先頭に戻る
+    currentStringIndex = 0;
   }
   const digit = piString[currentStringIndex++];
   const newDigit = {
     id: nextPiDigitId++,
     digit: digit,
-    x: -fontSize, // 画面外からフォントサイズ分だけ左にオフセットして文字が表示され始めるように調整
+    x: -fontSize,
     y: 200,
     velocity: digitVelocity,
   };
   piDigits.push(newDigit);
 }
 
-function generatePiDigits(interval = 500) {
+function generateCharactors(interval = 500) {
   setInterval(() => {
-    createPiDigit();
+    createCharacter();
   }, interval);
 }
 
-function updatePiDigitsPosition(totalWidth) {
+function updateCharactorPositions(totalWidth) {
   piDigits.forEach((digit) => {
     digit.x += digit.velocity;
   });
-  piDigits = piDigits.filter((digit) => digit.x <= totalWidth + fontSize); // fontSizeを使用してフィルタリング条件を調整
+  piDigits = piDigits.filter((digit) => digit.x <= totalWidth + fontSize);
 }
 
-function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
+function sendCharactorPositions(wss, isOpen, clientWidths, clients) {
   let cumulativeWidth = 0;
   wss.clients.forEach((client) => {
     const clientId = clients.get(client);
@@ -44,7 +44,7 @@ function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
     const clientWidth = clientWidths.get(clientId);
     piDigits.forEach((digit) => {
       const adjustedX = digit.x - cumulativeWidth;
-      if (adjustedX + fontSize > 0 && adjustedX < clientWidth) { // fontSizeを使用して条件を調整
+      if (adjustedX + fontSize > 0 && adjustedX < clientWidth) {
         client.send(JSON.stringify({
           type: "updatePiDigit",
           data: {
@@ -61,7 +61,7 @@ function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
 }
 
 module.exports = {
-  generatePiDigits,
-  updatePiDigitsPosition,
-  sendPiDigitPositions,
+  generateCharactors,
+  updateCharactorPositions,
+  sendCharactorPositions,
 };

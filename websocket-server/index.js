@@ -3,7 +3,7 @@
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 const { generateCircles, updateCircles, sendCirclePositions } = require('./circleMotion');
-const { generatePiDigits, updatePiDigitsPosition, sendPiDigitPositions } = require('./stringMotion');
+const { generateCharactors, updateCharactorPositions, sendCharactorPositions } = require('./stringMotion');
 const { getTotalWidth } = require('./utils');
 
 const PORT = 8080;
@@ -14,7 +14,7 @@ const isOpen = (ws) => ws.readyState === WebSocket.OPEN;
 let updatesIntervalId = null;
 
 generateCircles(getTotalWidth(clientWidths));
-generatePiDigits();
+generateCharactors();
 
 wss.on('connection', (ws) => {
   const clientId = uuidv4();
@@ -52,8 +52,8 @@ function startCircleUpdatesAndTransmissions() {
     updateCircles();
     sendCirclePositions(wss, isOpen, clientWidths, clients);
     const totalWidth = getTotalWidth(clientWidths);
-    updatePiDigitsPosition(totalWidth);
-    sendPiDigitPositions(wss, isOpen, clientWidths, clients);
+    updateCharactorPositions(totalWidth);
+    sendCharactorPositions(wss, isOpen, clientWidths, clients);
   }, 16);
 }
 
