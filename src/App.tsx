@@ -38,6 +38,7 @@ const colors = [
 const App = () => {
   const [circles, setCircles] = useState<Circle[]>([]);
   const [piDigits, setPiDigits] = useState<PiDigit[]>([]);
+  const [fontSize, setFontSize] = useState(360);
   const [displayCircles, setDisplayCircles] = useState(true);
   const ws = useRef<WebSocket | null>(null);
 
@@ -80,7 +81,7 @@ const App = () => {
                 return [...prevCircles, { id, x, y, radius, color: colors[colorIndex], visible }];
               }
             });
-          } else if (message.type === "updatePiDigit") {
+          } else if (message.type === "updateCharactor") {
             const { id, digit, x, y, clientId } = message.data;
             setPiDigits((prevDigits) => {
               const digitIndex = prevDigits.findIndex((d) => d.id === id);
@@ -92,6 +93,8 @@ const App = () => {
                 return [...prevDigits, { id, digit, x, y, clientId }];
               }
             });
+          } else if (message.type === "fontSize") {
+            setFontSize(message.fontSize);
           }
         };
         ws.current.onclose = () => {
@@ -163,7 +166,7 @@ const App = () => {
                 position: "absolute",
                 left: `${digit.x}px`,
                 top: `${digit.y}px`,
-                fontSize: "360px",
+                fontSize: `${fontSize}px`,
                 fontFamily: "monospace",
               }}
             >

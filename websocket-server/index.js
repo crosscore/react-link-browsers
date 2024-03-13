@@ -3,7 +3,7 @@
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 const { generateCircles, updateCircles, sendCirclePositions } = require('./circleMotion');
-const { generateCharactors, updateCharactorPositions, sendCharactorPositions } = require('./stringMotion');
+const { generateCharactors, updateCharactorPositions, sendCharactorPositions, setFontSize } = require('./stringMotion');
 const { getTotalWidth } = require('./utils');
 
 const PORT = 8080;
@@ -11,8 +11,10 @@ const wss = new WebSocket.Server({ port: PORT });
 const clientWidths = new Map();
 const clients = new Map();
 const isOpen = (ws) => ws.readyState === WebSocket.OPEN;
+const initialFontSize = 360;
 let updatesIntervalId = null;
 
+setFontSize(initialFontSize);
 generateCircles(getTotalWidth(clientWidths));
 generateCharactors();
 
@@ -32,6 +34,8 @@ wss.on('connection', (ws) => {
       }
     }
   });
+
+  ws.send(JSON.stringify({ type: "fontSize", fontSize: initialFontSize }));
 
   ws.on('close', () => {
     console.log(`Client ${clientId} disconnected`);

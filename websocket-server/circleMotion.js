@@ -2,7 +2,7 @@
 
 let circles = [];
 const circleLifetime = 12000;
-const circleRadius = 60;
+const circleRadius = 90;
 let nextCircleId = 0;
 
 function createCircle(totalWidth) {
@@ -20,7 +20,7 @@ function createCircle(totalWidth) {
   }, circleLifetime);
 }
 
-function generateCircles(totalWidth, interval = 800) {
+function generateCircles(totalWidth, interval = 1200) {
   setInterval(() => {
     createCircle(totalWidth);
   }, interval);

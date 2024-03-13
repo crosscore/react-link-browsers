@@ -2,11 +2,15 @@
 
 let piDigits = [];
 let nextPiDigitId = 0;
-const fontSize = 360;
+let fontSize = 360;
 const digitVelocity = 6;
 
 const piString = "Thank you for your attention! This is the first 100 digits of pi: 3.1415926535 8979323846 2643383279 5028841971 6939937510 5820974944 5923078164 0628620899 8628034825 3421170679 ";
 let currentStringIndex = 0;
+
+function setFontSize(newFontSize) {
+  fontSize = newFontSize;
+}
 
 function createCharacter() {
   if (currentStringIndex >= piString.length) {
@@ -46,7 +50,7 @@ function sendCharactorPositions(wss, isOpen, clientWidths, clients) {
       const adjustedX = digit.x - cumulativeWidth;
       if (adjustedX + fontSize > 0 && adjustedX < clientWidth) {
         client.send(JSON.stringify({
-          type: "updatePiDigit",
+          type: "updateCharactor",
           data: {
             id: digit.id,
             digit: digit.digit,
@@ -64,4 +68,5 @@ module.exports = {
   generateCharactors,
   updateCharactorPositions,
   sendCharactorPositions,
+  setFontSize,
 };
