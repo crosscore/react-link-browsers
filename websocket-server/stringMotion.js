@@ -20,11 +20,10 @@ function createCharacter(totalWidth) {
   const newDigit = {
     id: nextStringId++,
     digit: digit,
-    x: totalWidth * 2 + fontSize,
+    x: totalWidth + fontSize + 1000, // 1000 is an arbitrary large number
     y: 200,
     velocity: digitVelocity,
   };
-  //console.log(`Created character ${newDigit.x}`);
   strings.push(newDigit);
 }
 
@@ -38,7 +37,6 @@ function updateCharactorPositions(totalWidth) {
   strings.forEach((digit) => {
     digit.x += digit.velocity;
   });
-  // Remove off-screen digits
   strings = strings.filter((digit) => digit.x + fontSize >= 0);
 }
 
