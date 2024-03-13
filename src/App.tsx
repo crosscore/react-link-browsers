@@ -163,7 +163,7 @@ const App = () => {
                 position: "absolute",
                 left: `${digit.x}px`,
                 top: `${digit.y}px`,
-                fontSize: "120px",
+                fontSize: "360px",
                 fontFamily: "monospace",
               }}
             >
