@@ -11,30 +11,31 @@ let currentStringIndex = 0;
 
 function createPiDigit() {
   if (currentStringIndex >= piString.length) {
-    currentStringIndex = 0; // loop back to the beginning
+    currentStringIndex = 0; // 文字列の先頭に戻る
   }
   const digit = piString[currentStringIndex++];
   const newDigit = {
     id: nextPiDigitId++,
     digit: digit,
-    x: -digitWidth,
+    x: -digitWidth * (piDigits.length + 1), // 文字の初期位置を調整
     y: 200,
     velocity: digitVelocity,
   };
   piDigits.push(newDigit);
 }
 
-function generatePiDigits(interval = 500) {
-  setInterval(() => {
-    createPiDigit();
-  }, interval);
-}
-
 function updatePiDigitsPosition(totalWidth) {
   piDigits.forEach((digit) => {
     digit.x += digit.velocity;
   });
+  // 文字が画面の端を超えた場合に配列から削除
   piDigits = piDigits.filter((digit) => digit.x <= totalWidth + digitWidth);
+}
+
+function generatePiDigits(interval = 500) {
+  setInterval(() => {
+    createPiDigit();
+  }, interval);
 }
 
 function sendPiDigitPositions(wss, isOpen, clientWidths, clients) {
