@@ -20,7 +20,7 @@ function createCharacter(totalWidth, maxWidth) {
   const newDigit = {
     id: nextStringId++,
     digit: digit,
-    x: totalWidth + fontSize + maxWidth,
+    x: totalWidth + maxWidth,
     y: 200,
     velocity: digitVelocity,
   };
@@ -40,27 +40,31 @@ function updateCharactorPositions() {
   strings = strings.filter((digit) => digit.x + fontSize >= 0);
 }
 
-function sendCharactorPositions(wss, isOpen, clients, clientWidths) {
-  let cumulativeWidth = 0;
+function getTotalWidthUpToClientId(clientWidths, clientId) {
+  let width = 0;
+  for (let [id, clientWidth] of clientWidths) {
+    if (id === clientId) break;
+    width += clientWidth;
+  }
+  return width;
+}
+
+function sendCharactorPositions(wss, isOpen, clients, clientWidths, maxWidth) {
   wss.clients.forEach((client) => {
     const clientId = clients.get(client);
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) return;
+
     const clientWidth = clientWidths.get(clientId);
     strings.forEach((digit) => {
-      const adjustedX = digit.x - cumulativeWidth;
+      const adjustedX = digit.x - getTotalWidthUpToClientId(clientWidths, clientId);
+
       if (adjustedX + fontSize > 0 && adjustedX < clientWidth) {
         client.send(JSON.stringify({
           type: "updateCharactor",
-          data: {
-            id: digit.id,
-            digit: digit.digit,
-            x: adjustedX,
-            y: digit.y,
-          },
+          data: { id: digit.id, digit: digit.digit, x: adjustedX, y: digit.y },
         }));
       }
     });
-    cumulativeWidth += clientWidth;
   });
 }
 

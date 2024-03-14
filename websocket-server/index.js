@@ -15,7 +15,13 @@ const initialFontSize = 360;
 let updatesIntervalId = null;
 
 setFontSize(initialFontSize);
-generateCircles(getTotalWidth(clientWidths));
+
+function resetAndStartGenerations() {
+  const totalWidth = getTotalWidth(clientWidths);
+  const maxWidth = getMaxWidth(clientWidths);
+  generateCharactors(totalWidth, maxWidth);
+  generateCircles(totalWidth);
+}
 
 wss.on('connection', (ws) => {
   const clientId = uuidv4();
@@ -28,13 +34,18 @@ wss.on('connection', (ws) => {
         clientWidths.set(clientId, clientWidth);
         clients.set(ws, clientId);
         console.log(`Client ${clientId} width set to ${clientWidth}`);
-        if (clients.size === 1) { // only start updates and transmissions when the first client connects
-          const totalWidth = getTotalWidth(clientWidths);
-          const maxWidth = getMaxWidth(clientWidths);
-          generateCharactors(totalWidth, maxWidth);
+        if (clients.size === 1) {
+          resetAndStartGenerations();
         }
       } else {
         console.log(`Client ${clientId} has invalid width ${clientWidth}, ignoring this client.`);
+      }
+    } else if (msg.type === 'windowResize') {
+      const newWidth = parseInt(msg.data.innerWidth, 10);
+      if (newWidth > 0 && clientWidths.has(clientId)) {
+        clientWidths.set(clientId, newWidth);
+        console.log(`Client ${clientId} resized to ${newWidth}px`);
+        resetAndStartGenerations();
       }
     }
   });
