@@ -4,7 +4,7 @@ const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
 const { generateCircles, updateCircles, sendCirclePositions } = require('./circleMotion');
 const { generateCharactors, updateCharactorPositions, sendCharactorPositions, setFontSize } = require('./stringMotion');
-const { getTotalWidth } = require('./utils');
+const { getTotalWidth, getMaxWidth } = require('./utils');
 
 const PORT = 8080;
 const wss = new WebSocket.Server({ port: PORT });
@@ -28,9 +28,10 @@ wss.on('connection', (ws) => {
         clientWidths.set(clientId, clientWidth);
         clients.set(ws, clientId);
         console.log(`Client ${clientId} width set to ${clientWidth}`);
-        if (clients.size === 1) { // 最初のクライアント接続時に限りgenerateCharactorsを呼び出す
+        if (clients.size === 1) { // only start updates and transmissions when the first client connects
           const totalWidth = getTotalWidth(clientWidths);
-          generateCharactors(totalWidth); // totalWidthを引数として渡す
+          const maxWidth = getMaxWidth(clientWidths);
+          generateCharactors(totalWidth, maxWidth);
         }
       } else {
         console.log(`Client ${clientId} has invalid width ${clientWidth}, ignoring this client.`);
@@ -59,8 +60,9 @@ function startUpdatesAndTransmissions() {
     updateCircles();
     sendCirclePositions(wss, isOpen, clientWidths, clients);
     const totalWidth = getTotalWidth(clientWidths);
-    updateCharactorPositions(totalWidth);
-    sendCharactorPositions(wss, isOpen, clientWidths, clients);
+    const maxWidth = getMaxWidth(clientWidths);
+    updateCharactorPositions(totalWidth, maxWidth);
+    sendCharactorPositions(wss, isOpen, clients, clientWidths, maxWidth);
   }, 16);
 }
 

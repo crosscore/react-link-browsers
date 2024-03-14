@@ -12,7 +12,7 @@ function setFontSize(newFontSize) {
   fontSize = newFontSize;
 }
 
-function createCharacter(totalWidth) {
+function createCharacter(totalWidth, maxWidth) {
   if (currentStringIndex >= piString.length) {
     currentStringIndex = 0;
   }
@@ -20,27 +20,27 @@ function createCharacter(totalWidth) {
   const newDigit = {
     id: nextStringId++,
     digit: digit,
-    x: totalWidth + fontSize + 1000, // 1000 is an arbitrary large number
+    x: totalWidth + fontSize + maxWidth,
     y: 200,
     velocity: digitVelocity,
   };
   strings.push(newDigit);
 }
 
-function generateCharactors(totalWidth, interval = 300) {
+function generateCharactors(totalWidth, maxWidth, interval = 300) {
   setInterval(() => {
-    createCharacter(totalWidth);
+    createCharacter(totalWidth, maxWidth);
   }, interval);
 }
 
-function updateCharactorPositions(totalWidth) {
+function updateCharactorPositions(totalWidth, maxWidth) {
   strings.forEach((digit) => {
     digit.x += digit.velocity;
   });
   strings = strings.filter((digit) => digit.x + fontSize >= 0);
 }
 
-function sendCharactorPositions(wss, isOpen, clientWidths, clients) {
+function sendCharactorPositions(wss, isOpen, clients, clientWidths) {
   let cumulativeWidth = 0;
   wss.clients.forEach((client) => {
     const clientId = clients.get(client);
