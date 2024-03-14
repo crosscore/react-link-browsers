@@ -33,7 +33,7 @@ function generateCharactors(totalWidth, maxWidth, interval = 300) {
   }, interval);
 }
 
-function updateCharactorPositions(totalWidth, maxWidth) {
+function updateCharactorPositions() {
   strings.forEach((digit) => {
     digit.x += digit.velocity;
   });

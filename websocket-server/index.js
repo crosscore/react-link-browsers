@@ -59,9 +59,8 @@ function startUpdatesAndTransmissions() {
   updatesIntervalId = setInterval(() => {
     updateCircles();
     sendCirclePositions(wss, isOpen, clientWidths, clients);
-    const totalWidth = getTotalWidth(clientWidths);
     const maxWidth = getMaxWidth(clientWidths);
-    updateCharactorPositions(totalWidth, maxWidth);
+    updateCharactorPositions();
     sendCharactorPositions(wss, isOpen, clients, clientWidths, maxWidth);
   }, 16);
 }
