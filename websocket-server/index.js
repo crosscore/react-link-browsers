@@ -13,14 +13,25 @@ const clients = new Map();
 const isOpen = (ws) => ws.readyState === WebSocket.OPEN;
 const initialFontSize = 360;
 let updatesIntervalId = null;
+let charactorsIntervalId = null;
+let circlesIntervalId = null; 
 
 setFontSize(initialFontSize);
 
 function resetAndStartGenerations() {
+  if (charactorsIntervalId !== null) {
+    clearInterval(charactorsIntervalId);
+    charactorsIntervalId = null;
+  }
+  if (circlesIntervalId !== null) {
+    clearInterval(circlesIntervalId);
+    circlesIntervalId = null;
+  }
+
   const totalWidth = getTotalWidth(clientWidths);
   const maxWidth = getMaxWidth(clientWidths);
-  generateCharactors(totalWidth, maxWidth);
-  generateCircles(totalWidth);
+  charactorsIntervalId = generateCharactors(totalWidth, maxWidth);
+  circlesIntervalId = generateCircles(totalWidth);
 }
 
 wss.on('connection', (ws) => {
