@@ -27,8 +27,14 @@ function createCharacter(totalWidth, maxWidth) {
   strings.push(newDigit);
 }
 
+let charactorsIntervalId = null;
+
 function generateCharactors(totalWidth, maxWidth, interval = 300) {
-  setInterval(() => {
+  console.log("Generating characters");
+  if (charactorsIntervalId !== null) {
+    clearInterval(charactorsIntervalId);
+  }
+  charactorsIntervalId = setInterval(() => {
     createCharacter(totalWidth, maxWidth);
   }, interval);
 }
