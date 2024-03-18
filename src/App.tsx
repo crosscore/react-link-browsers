@@ -95,6 +95,9 @@ const App = () => {
             });
           } else if (message.type === "fontSize") {
             setFontSize(message.fontSize);
+          } else if (message.type === "clearDisplay") {
+            setCircles([]);
+            setPiDigits([]);
           }
         };
         ws.current.onclose = () => {
@@ -107,7 +110,7 @@ const App = () => {
 
     const handleResize = () => {
       const widthInfo = JSON.stringify({
-        type: "windowInfo",
+        type: "windowResize",
         data: { innerWidth: window.innerWidth },
       });
       ws.current?.send(widthInfo);

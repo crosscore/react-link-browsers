@@ -30,7 +30,7 @@ function createCharacter(totalWidth, maxWidth) {
 let charactorsIntervalId = null;
 
 function generateCharactors(totalWidth, maxWidth, interval = 300) {
-  console.log("Generating characters");
+  console.log("executing generateCharactors()");
   if (charactorsIntervalId !== null) {
     clearInterval(charactorsIntervalId);
   }
