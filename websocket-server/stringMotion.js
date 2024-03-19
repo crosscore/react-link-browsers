@@ -3,9 +3,9 @@
 let strings = [];
 let nextStringId = 0;
 let fontSize = 360;
-const digitVelocity = -10;
+const digitVelocity = -18;
 
-const piString = "Thank you for your attention! "// This is the first 100 digits of pi: 3.1415926535 8979323846 2643383279 5028841971 6939937510 5820974944 5923078164 0628620899 8628034825 3421170679 ";
+const piString = "Thank you for your attention! This is the first 100 digits of pi: 3.1415926535 8979323846 2643383279 5028841971 6939937510 5820974944 5923078164 0628620899 8628034825 3421170679 ";
 let currentStringIndex = 0;
 
 function setFontSize(newFontSize) {
@@ -29,7 +29,7 @@ function createCharacter(totalWidth, maxWidth) {
 
 let charactorsIntervalId = null;
 
-function generateCharactors(totalWidth, maxWidth, interval = 300) {
+function generateCharactors(totalWidth, maxWidth, interval = 150) {
   console.log("executing generateCharactors()");
   if (charactorsIntervalId !== null) {
     clearInterval(charactorsIntervalId);
