@@ -14,14 +14,13 @@ function createCircle(totalWidth) {
     radius: circleRadius,
   };
   circles.push(newCircle);
-  // console.log(`Created circle ${newCircle.id}`);
   setTimeout(() => {
     circles = circles.filter((circle) => circle.id !== newCircle.id);
   }, circleLifetime);
 }
 
 function generateCircles(totalWidth, interval = 1200) {
-  setInterval(() => {
+  return setInterval(() => {
     createCircle(totalWidth);
   }, interval);
 }
@@ -45,7 +44,6 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
         circle.x + circle.radius > cumulativeWidth &&
         circle.x - circle.radius < cumulativeWidth + clientWidth * 2
       ) {
-        //console.log(`Sending circle ${circle.id} to client ${clientId}`);
         client.send(
           JSON.stringify({
             type: "updateCircle",
@@ -64,7 +62,6 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
 }
 
 module.exports = {
-  createCircle,
   generateCircles,
   updateCircles,
   sendCirclePositions,

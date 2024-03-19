@@ -18,32 +18,18 @@ let circlesIntervalId = null;
 
 setFontSize(initialFontSize);
 
-function resetAndStartGenerations() {
-  console.log('executing resetAndStartGenerations()');
-  if (charactorsIntervalId !== null) {
-    clearInterval(charactorsIntervalId);
-    charactorsIntervalId = null;
+function startGenerations() {
+  console.log('executing startGenerations()');
+  if (charactorsIntervalId === null) {
+    const totalWidth = getTotalWidth(clientWidths);
+    const maxWidth = getMaxWidth(clientWidths);
+    charactorsIntervalId = generateCharactors(totalWidth, maxWidth);
   }
 
-  for (const [clientId, clientWidth] of clientWidths) {
-    const client = Array.from(clients.entries()).find(([_, id]) => id === clientId)?.[0];
-    if (client && client.readyState === WebSocket.OPEN) {
-      console.log(`Clearing display for client ${clientId}`);
-      client.send(JSON.stringify({ type: "clearDisplay" }));
-    }
+  if (circlesIntervalId === null) {
+    const totalWidth = getTotalWidth(clientWidths);
+    circlesIntervalId = generateCircles(totalWidth);
   }
-
-  const totalWidth = getTotalWidth(clientWidths);
-  const maxWidth = getMaxWidth(clientWidths);
-  charactorsIntervalId = generateCharactors(totalWidth, maxWidth);
-}
-
-function startCircleGeneration() {
-  if (circlesIntervalId !== null) {
-    clearInterval(circlesIntervalId);
-  }
-  const totalWidth = getTotalWidth(clientWidths);
-  circlesIntervalId = generateCircles(totalWidth);
 }
 
 wss.on('connection', (ws) => {
@@ -57,10 +43,7 @@ wss.on('connection', (ws) => {
         clientWidths.set(clientId, clientWidth);
         clients.set(ws, clientId);
         console.log(`Client ${clientId} width set to ${clientWidth}`);
-        if (clients.size === 1) {
-          resetAndStartGenerations();
-          startCircleGeneration();
-        }
+        startGenerations();
       } else {
         console.log(`Client ${clientId} has invalid width ${clientWidth}, ignoring this client.`);
       }
@@ -69,7 +52,7 @@ wss.on('connection', (ws) => {
       if (newWidth > 0 && clientWidths.has(clientId)) {
         clientWidths.set(clientId, newWidth);
         console.log(`Client ${clientId} resized to ${newWidth}px`);
-        resetAndStartGenerations();
+        startGenerations();
       }
     }
   });
@@ -83,6 +66,10 @@ wss.on('connection', (ws) => {
     if (clients.size === 0) {
       clearInterval(updatesIntervalId);
       updatesIntervalId = null;
+      clearInterval(charactorsIntervalId);
+      charactorsIntervalId = null;
+      clearInterval(circlesIntervalId);
+      circlesIntervalId = null;
     }
   });
 });
