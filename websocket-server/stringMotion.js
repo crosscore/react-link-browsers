@@ -10,6 +10,9 @@ let currentStringIndex = 0;
 
 function setFontSize(newFontSize) {
   fontSize = newFontSize;
+  strings.forEach((digit) => {
+    digit.fontSize = fontSize;
+  });
 }
 
 function createCharacter(totalWidth, maxWidth) {
@@ -23,6 +26,7 @@ function createCharacter(totalWidth, maxWidth) {
     x: totalWidth + 500,
     y: 200,
     velocity: digitVelocity,
+    fontSize: fontSize,
   };
   strings.push(newDigit);
 }
@@ -66,10 +70,10 @@ function sendCharactorPositions(wss, isOpen, clients, clientWidths, maxWidth) {
     strings.forEach((digit) => {
       const adjustedX = digit.x - adjustedWidth;
 
-      if (adjustedX + fontSize > 0 && adjustedX < clientWidth) {
+      if (adjustedX + digit.fontSize > 0 && adjustedX < clientWidth) {
         client.send(JSON.stringify({
           type: "updateCharactor",
-          data: { id: digit.id, digit: digit.digit, x: adjustedX, y: digit.y, clientId: clientId },
+          data: { id: digit.id, digit: digit.digit, x: adjustedX, y: digit.y, clientId: clientId, fontSize: digit.fontSize },
         }));
       }
     });

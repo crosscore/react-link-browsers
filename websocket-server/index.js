@@ -2,7 +2,7 @@
 
 const WebSocket = require('ws');
 const { v4: uuidv4 } = require('uuid');
-const { generateCircles, updateCircles, sendCirclePositions } = require('./circleMotion');
+const { generateCircles, updateCircles, sendCirclePositions, setCircleRadius } = require('./circleMotion');
 const { generateCharactors, updateCharactorPositions, sendCharactorPositions, setFontSize } = require('./stringMotion');
 const { getTotalWidth, getMaxWidth } = require('./utils');
 
@@ -53,6 +53,16 @@ wss.on('connection', (ws) => {
         clientWidths.set(clientId, newWidth);
         console.log(`Client ${clientId} resized to ${newWidth}px`);
         startGenerations();
+      }
+    } else if (msg.type === 'circleRadius') {
+      const newRadius = parseFloat(msg.radius);
+      if (newRadius > 0) {
+        setCircleRadius(newRadius);
+      }
+    } else if (msg.type === 'fontSize') {
+      const newFontSize = parseFloat(msg.fontSize);
+      if (newFontSize > 0) {
+        setFontSize(newFontSize);
       }
     }
   });

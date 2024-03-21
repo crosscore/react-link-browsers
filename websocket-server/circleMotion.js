@@ -2,8 +2,15 @@
 
 let circles = [];
 const circleLifetime = 12000;
-const circleRadius = 120;
+let circleRadius = 120;
 let nextCircleId = 0;
+
+function setCircleRadius(newRadius) {
+  circleRadius = newRadius;
+  circles.forEach((circle) => {
+    circle.radius = circleRadius;
+  });
+}
 
 function createCircle(totalWidth) {
   const newCircle = {
@@ -65,4 +72,5 @@ module.exports = {
   generateCircles,
   updateCircles,
   sendCirclePositions,
+  setCircleRadius,
 };

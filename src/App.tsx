@@ -18,6 +18,7 @@ interface PiDigit {
   x: number;
   y: number;
   clientId?: string;
+  fontSize?: number;
 }
 
 const colors = [
@@ -40,6 +41,7 @@ const App = () => {
   const [piDigits, setPiDigits] = useState<PiDigit[]>([]);
   const [fontSize, setFontSize] = useState(360);
   const [displayCircles, setDisplayCircles] = useState(true);
+  const [circleRadius, setCircleRadius] = useState(120);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -82,19 +84,21 @@ const App = () => {
               }
             });
           } else if (message.type === "updateCharactor") {
-            const { id, digit, x, y, clientId } = message.data;
+            const { id, digit, x, y, clientId, fontSize } = message.data;
             setPiDigits((prevDigits) => {
               const digitIndex = prevDigits.findIndex((d) => d.id === id);
               if (digitIndex !== -1) {
                 const updatedDigits = [...prevDigits];
-                updatedDigits[digitIndex] = { ...updatedDigits[digitIndex], digit, x, y, clientId };
+                updatedDigits[digitIndex] = { ...updatedDigits[digitIndex], digit, x, y, clientId, fontSize };
                 return updatedDigits;
               } else {
-                return [...prevDigits, { id, digit, x, y, clientId }];
+                return [...prevDigits, { id, digit, x, y, clientId, fontSize }];
               }
             });
           } else if (message.type === "fontSize") {
             setFontSize(message.fontSize);
+          } else if (message.type === "circleRadius") {
+            setCircleRadius(message.radius);
           } else if (message.type === "clearDisplay") {
             setCircles([]);
             setPiDigits([]);
@@ -128,17 +132,36 @@ const App = () => {
     setDisplayCircles(!displayCircles);
   };
 
+  const handleFontSizeChange = (increase: boolean) => {
+    setFontSize((prevSize) => {
+      const newSize = increase ? prevSize * 1.25 : prevSize * 0.75;
+      ws.current?.send(JSON.stringify({ type: "fontSize", fontSize: newSize }));
+      return newSize;
+    });
+  };
+
+  const handleCircleRadiusChange = (increase: boolean) => {
+    setCircleRadius((prevRadius) => {
+      const newRadius = increase ? prevRadius * 1.25 : prevRadius * 0.75;
+      ws.current?.send(JSON.stringify({ type: "circleRadius", radius: newRadius }));
+      return newRadius;
+    });
+  };
+
   return (
     <div
       className="App"
       style={{ position: "relative", height: "100vh", overflow: "hidden" }}
     >
-      <button
-        onClick={toggleDisplay}
-        style={{ position: "absolute", right: 20, top: 20, zIndex: 1000 }}
-      >
-        {displayCircles ? "Strings" : "Circles"}
-      </button>
+      <div style={{ position: "absolute", right: 20, top: 20, zIndex: 1000, display: "flex", gap: "10px" }}>
+        <button onClick={toggleDisplay}>
+          {displayCircles ? "Strings" : "Circles"}
+        </button>
+        <button onClick={() => handleFontSizeChange(true)}>Font +</button>
+        <button onClick={() => handleFontSizeChange(false)}>Font -</button>
+        <button onClick={() => handleCircleRadiusChange(true)}>Circle +</button>
+        <button onClick={() => handleCircleRadiusChange(false)}>Circle -</button>
+      </div>
       {displayCircles ? (
         <>
           {circles.map(
@@ -169,7 +192,7 @@ const App = () => {
                 position: "absolute",
                 left: `${digit.x}px`,
                 top: `${digit.y}px`,
-                fontSize: `${fontSize}px`,
+                fontSize: `${digit.fontSize}px`,
                 fontFamily: "monospace",
               }}
             >
