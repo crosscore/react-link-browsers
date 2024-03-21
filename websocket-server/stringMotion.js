@@ -20,7 +20,7 @@ function createCharacter(totalWidth, maxWidth) {
   const newDigit = {
     id: nextStringId++,
     digit: digit,
-    x: totalWidth + maxWidth,
+    x: totalWidth + 500,
     y: 200,
     velocity: digitVelocity,
   };
@@ -30,13 +30,13 @@ function createCharacter(totalWidth, maxWidth) {
 let charactorsIntervalId = null;
 
 function generateCharactors(totalWidth, maxWidth, interval = 150) {
-  console.log("executing generateCharactors()");
   if (charactorsIntervalId !== null) {
     clearInterval(charactorsIntervalId);
   }
   charactorsIntervalId = setInterval(() => {
     createCharacter(totalWidth, maxWidth);
   }, interval);
+  return charactorsIntervalId;
 }
 
 function updateCharactorPositions() {
@@ -61,13 +61,15 @@ function sendCharactorPositions(wss, isOpen, clients, clientWidths, maxWidth) {
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) return;
 
     const clientWidth = clientWidths.get(clientId);
+    const adjustedWidth = getTotalWidthUpToClientId(clientWidths, clientId);
+
     strings.forEach((digit) => {
-      const adjustedX = digit.x - getTotalWidthUpToClientId(clientWidths, clientId);
+      const adjustedX = digit.x - adjustedWidth;
 
       if (adjustedX + fontSize > 0 && adjustedX < clientWidth) {
         client.send(JSON.stringify({
           type: "updateCharactor",
-          data: { id: digit.id, digit: digit.digit, x: adjustedX, y: digit.y },
+          data: { id: digit.id, digit: digit.digit, x: adjustedX, y: digit.y, clientId: clientId },
         }));
       }
     });

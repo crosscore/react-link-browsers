@@ -4,13 +4,7 @@ function getTotalWidth(clientWidths) {
 }
 
 function getMaxWidth(clientWidths) {
-  let maxWidth = 0;
-  clientWidths.forEach((width) => {
-    if (width > maxWidth) {
-      maxWidth = width;
-    }
-  });
-  return maxWidth;
+  return Math.max(...clientWidths.values());
 }
 
 module.exports = {

@@ -19,15 +19,15 @@ let circlesIntervalId = null;
 setFontSize(initialFontSize);
 
 function startGenerations() {
-  console.log('executing startGenerations()');
-  if (charactorsIntervalId === null) {
-    const totalWidth = getTotalWidth(clientWidths);
-    const maxWidth = getMaxWidth(clientWidths);
-    charactorsIntervalId = generateCharactors(totalWidth, maxWidth);
+  const totalWidth = getTotalWidth(clientWidths);
+  const maxWidth = getMaxWidth(clientWidths);
+
+  if (charactorsIntervalId !== null) {
+    clearInterval(charactorsIntervalId);
   }
+  charactorsIntervalId = generateCharactors(totalWidth, maxWidth);
 
   if (circlesIntervalId === null) {
-    const totalWidth = getTotalWidth(clientWidths);
     circlesIntervalId = generateCircles(totalWidth);
   }
 }
