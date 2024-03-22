@@ -39,8 +39,10 @@ const colors = [
 const App = () => {
   const [circles, setCircles] = useState<Circle[]>([]);
   const [piDigits, setPiDigits] = useState<PiDigit[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fontSize, setFontSize] = useState(360);
   const [displayCircles, setDisplayCircles] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [circleRadius, setCircleRadius] = useState(120);
   const ws = useRef<WebSocket | null>(null);
 
