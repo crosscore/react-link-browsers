@@ -21,6 +21,7 @@ setFontSize(initialFontSize);
 function startGenerations() {
   const totalWidth = getTotalWidth(clientWidths);
   const maxWidth = getMaxWidth(clientWidths);
+  console.log(`Total width: ${totalWidth}, max width: ${maxWidth}`);
 
   if (charactorsIntervalId !== null) {
     clearInterval(charactorsIntervalId);

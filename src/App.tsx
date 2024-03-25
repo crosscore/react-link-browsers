@@ -12,9 +12,9 @@ interface Circle {
   visible: boolean;
 }
 
-interface PiDigit {
+interface CharElement {
   id: number;
-  digit: string;
+  char: string;
   x: number;
   y: number;
   clientId?: string;
@@ -38,7 +38,7 @@ const colors = [
 
 const App = () => {
   const [circles, setCircles] = useState<Circle[]>([]);
-  const [piDigits, setPiDigits] = useState<PiDigit[]>([]);
+  const [charElements, setCharElements] = useState<CharElement[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fontSize, setFontSize] = useState(360);
   const [displayCircles, setDisplayCircles] = useState(true);
@@ -86,15 +86,15 @@ const App = () => {
               }
             });
           } else if (message.type === "updateCharactor") {
-            const { id, digit, x, y, clientId, fontSize } = message.data;
-            setPiDigits((prevDigits) => {
-              const digitIndex = prevDigits.findIndex((d) => d.id === id);
-              if (digitIndex !== -1) {
-                const updatedDigits = [...prevDigits];
-                updatedDigits[digitIndex] = { ...updatedDigits[digitIndex], digit, x, y, clientId, fontSize };
-                return updatedDigits;
+            const { id, char, x, y, clientId, fontSize } = message.data;
+            setCharElements((prevChars) => {
+              const charIndex = prevChars.findIndex((d) => d.id === id);
+              if (charIndex !== -1) {
+                const updatedChars = [...prevChars];
+                updatedChars[charIndex] = { ...updatedChars[charIndex], char, x, y, clientId, fontSize };
+                return updatedChars;
               } else {
-                return [...prevDigits, { id, digit, x, y, clientId, fontSize }];
+                return [...prevChars, { id, char, x, y, clientId, fontSize }];
               }
             });
           } else if (message.type === "fontSize") {
@@ -103,7 +103,7 @@ const App = () => {
             setCircleRadius(message.radius);
           } else if (message.type === "clearDisplay") {
             setCircles([]);
-            setPiDigits([]);
+            setCharElements([]);
           }
         };
         ws.current.onclose = () => {
@@ -187,18 +187,18 @@ const App = () => {
         </>
       ) : (
         <>
-          {piDigits.map((digit, index) => (
+          {charElements.map((char, index) => (
             <div
               key={index}
               style={{
                 position: "absolute",
-                left: `${digit.x}px`,
-                top: `${digit.y}px`,
-                fontSize: `${digit.fontSize}px`,
+                left: `${char.x}px`,
+                top: `${char.y}px`,
+                fontSize: `${char.fontSize}px`,
                 fontFamily: "monospace",
               }}
             >
-              {digit.digit}
+              {char.char}
             </div>
           ))}
         </>
