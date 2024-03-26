@@ -16,7 +16,7 @@ function createCircle(totalWidth) {
   const newCircle = {
     id: nextCircleId++,
     x: -circleRadius,
-    y: 300,
+    y: 360,
     velocity: 6,
     radius: circleRadius,
   };
