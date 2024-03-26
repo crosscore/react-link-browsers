@@ -67,7 +67,10 @@ const App = () => {
             ws.current.send(
               JSON.stringify({
                 type: 'windowInfo',
-                data: { innerWidth: window.innerWidth },
+                data: {
+                  innerWidth: window.innerWidth,
+                  innerHeight: window.innerHeight,
+                },
               })
             );
           }
@@ -130,7 +133,9 @@ const App = () => {
     const handleResize = () => {
       const widthInfo = JSON.stringify({
         type: "windowResize",
-        data: { innerWidth: window.innerWidth },
+        data: {
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,},
       });
       ws.current?.send(widthInfo);
     };

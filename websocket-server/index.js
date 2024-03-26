@@ -11,6 +11,7 @@ const { initializePlayerPosition, startUpdatingPlayerPosition, stopUpdatingPlaye
 const PORT = 8080;
 const wss = new WebSocket.Server({ port: PORT });
 const clientWidths = new Map();
+const clientHeights = new Map();
 const clients = new Map();
 const isOpen = (ws) => ws.readyState === WebSocket.OPEN;
 const initialFontSize = 360;
@@ -43,26 +44,25 @@ wss.on('connection', (ws) => {
     const msg = JSON.parse(message);
     if (msg.type === 'windowInfo') {
       const clientWidth = parseInt(msg.data.innerWidth, 10);
-      if (clientWidth > 0) {
+      const clientHeight = parseInt(msg.data.innerHeight, 10);
+      if (clientWidth > 0 && clientHeight > 0) {
         clientWidths.set(clientId, clientWidth);
+        clientHeights.set(clientId, clientHeight);
         clients.set(ws, clientId);
-        console.log(`Client ${clientId} width set to ${clientWidth}`);
+        console.log(`Client ${clientId} size set to ${clientWidth}x${clientHeight}`);
         initializePlayerPosition(msg.data, clientId, clientWidths);
         startGenerations();
       } else {
-        console.log(`Client ${clientId} has invalid width ${clientWidth}, ignoring this client.`);
+        console.log(`Client ${clientId} has invalid size ${clientWidth}x${clientHeight}, ignoring this client.`);
       }
     } else if (msg.type === 'windowResize') {
       const newWidth = parseInt(msg.data.innerWidth, 10);
-      if (newWidth > 0 && clientWidths.has(clientId)) {
+      const newHeight = parseInt(msg.data.innerHeight, 10);
+      if (newWidth > 0 && newHeight > 0 && clientWidths.has(clientId)) {
         clientWidths.set(clientId, newWidth);
-        console.log(`Client ${clientId} resized to ${newWidth}px`);
+        clientHeights.set(clientId, newHeight);
+        console.log(`Client ${clientId} resized to ${newWidth}x${newHeight}`);
         startGenerations();
-      }
-    } else if (msg.type === 'circleRadius') {
-      const newRadius = parseFloat(msg.radius);
-      if (newRadius > 0) {
-        setCircleRadius(newRadius);
       }
     } else if (msg.type === 'fontSize') {
       const newFontSize = parseFloat(msg.fontSize);
@@ -73,7 +73,7 @@ wss.on('connection', (ws) => {
       activeKeys.add(msg.key);
       console.log("Active keys", activeKeys);
       if (activeKeys.size === 1) {
-        startUpdatingPlayerPosition(activeKeys, wss, clientWidths, isOpen, clientId, clients);
+        startUpdatingPlayerPosition(activeKeys, wss, clientWidths, clientHeights, isOpen, clientId, clients);
       }
     } else if (msg.type === "stopMovingPlayer") {
       activeKeys.delete(msg.key);

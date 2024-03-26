@@ -17,7 +17,7 @@ function initializePlayerPosition(clientWindowSize, clientID, clientWidths) {
   players.set(clientID, player);
 }
 
-function updatePlayerPosition(activeKeys, clientID, clientWidths) {
+function updatePlayerPosition(activeKeys, clientID, clientWidths, clientHeight) {
   const player = players.get(clientID);
   if (!player) return;
 
@@ -31,15 +31,18 @@ function updatePlayerPosition(activeKeys, clientID, clientWidths) {
   if (player.x < 0) player.x += totalWidth;
   if (player.x > totalWidth) player.x -= totalWidth;
 
+  player.y = Math.max(0, Math.min(player.y, clientHeight)); // limit y position within the window
+
   players.set(clientID, player);
 }
 
-function startUpdatingPlayerPosition(activeKeys, wss, clientWidths, isOpen, clientID, clients) {
+function startUpdatingPlayerPosition(activeKeys, wss, clientWidths, clientHeights, isOpen, clientID, clients) {
   if (intervalId !== null) {
     clearInterval(intervalId);
   }
   intervalId = setInterval(() => {
-    updatePlayerPosition(activeKeys, clientID, clientWidths);
+    const clientHeight = clientHeights.get(clientID);
+    updatePlayerPosition(activeKeys, clientID, clientWidths, clientHeight);
     sendPlayerPositions(wss, clientWidths, isOpen, clients);
   }, 16);
 }
@@ -58,10 +61,11 @@ function sendPlayerPositions(wss, clientWidths, isOpen, clients) {
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) continue;
 
     const clientWidth = clientWidths.get(clientId);
+    const playerRadius = 100;
     const sendPosition = (player) => {
       if (
-        player.x >= cumulativeWidth &&
-        player.x < cumulativeWidth + clientWidth
+        player.x + playerRadius > cumulativeWidth &&
+        player.x - playerRadius < cumulativeWidth + clientWidth * 2
       ) {
         const position = {
           id: player.id,
