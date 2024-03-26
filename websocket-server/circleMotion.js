@@ -2,7 +2,7 @@
 
 let circles = [];
 const circleLifetime = 12000;
-let circleRadius = 120;
+let circleRadius = 150;
 let nextCircleId = 0;
 
 function setCircleRadius(newRadius) {

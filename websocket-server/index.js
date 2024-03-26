@@ -5,6 +5,8 @@ const { v4: uuidv4 } = require('uuid');
 const { generateCircles, updateCircles, sendCirclePositions, setCircleRadius } = require('./circleMotion');
 const { generateCharactors, updateCharactorPositions, sendCharactorPositions, setFontSize } = require('./stringMotion');
 const { getTotalWidth, getMaxWidth } = require('./utils');
+const { initializePlayerPosition, startUpdatingPlayerPosition, stopUpdatingPlayerPosition, sendPlayerPositions } = require("./playerMotion");
+
 
 const PORT = 8080;
 const wss = new WebSocket.Server({ port: PORT });
@@ -15,6 +17,7 @@ const initialFontSize = 360;
 let updatesIntervalId = null;
 let charactorsIntervalId = null;
 let circlesIntervalId = null; 
+const activeKeys = new Set();
 
 setFontSize(initialFontSize);
 
@@ -44,6 +47,7 @@ wss.on('connection', (ws) => {
         clientWidths.set(clientId, clientWidth);
         clients.set(ws, clientId);
         console.log(`Client ${clientId} width set to ${clientWidth}`);
+        initializePlayerPosition(msg.data, clientId, clientWidths);
         startGenerations();
       } else {
         console.log(`Client ${clientId} has invalid width ${clientWidth}, ignoring this client.`);
@@ -64,6 +68,17 @@ wss.on('connection', (ws) => {
       const newFontSize = parseFloat(msg.fontSize);
       if (newFontSize > 0) {
         setFontSize(newFontSize);
+      }
+    } else if (msg.type === "startMovingPlayer") {
+      activeKeys.add(msg.key);
+      console.log("Active keys", activeKeys);
+      if (activeKeys.size === 1) {
+        startUpdatingPlayerPosition(activeKeys, wss, clientWidths, isOpen, clientId, clients);
+      }
+    } else if (msg.type === "stopMovingPlayer") {
+      activeKeys.delete(msg.key);
+      if (activeKeys.size === 0) {
+        stopUpdatingPlayerPosition(clientId);
       }
     }
   });
@@ -95,6 +110,7 @@ function startUpdatesAndTransmissions() {
     const maxWidth = getMaxWidth(clientWidths);
     updateCharactorPositions();
     sendCharactorPositions(wss, isOpen, clients, clientWidths, maxWidth);
+    sendPlayerPositions(wss, clientWidths, isOpen, clients);
   }, 16);
 }
 

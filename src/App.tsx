@@ -21,6 +21,12 @@ interface CharElement {
   fontSize?: number;
 }
 
+interface Player {
+  id: number;
+  x: number;
+  y: number;
+}
+
 const colors = [
   "#F44336",
   "#E91E63",
@@ -42,8 +48,12 @@ const App = () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [fontSize, setFontSize] = useState(360);
   const [displayCircles, setDisplayCircles] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [circleRadius, setCircleRadius] = useState(120);
+  const [displayPlayer, setDisplayPlayer] = useState(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [activeKeys, setActiveKeys] = useState(new Set());
+  const [player, setPlayer] = useState<Player | null>(null);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -104,6 +114,9 @@ const App = () => {
           } else if (message.type === "clearDisplay") {
             setCircles([]);
             setCharElements([]);
+          } else if (message.type === "player") {
+            const { id, x, y } = message.position;
+            setPlayer({ id, x, y });
           }
         };
         ws.current.onclose = () => {
@@ -124,8 +137,35 @@ const App = () => {
 
     window.addEventListener("resize", handleResize);
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (["w", "a", "s", "d"].includes(e.key)) {
+        setActiveKeys((prevKeys) => {
+          const newKeys = new Set(prevKeys);
+          newKeys.add(e.key);
+          ws.current?.send(JSON.stringify({ type: "startMovingPlayer", key: e.key }));
+          return newKeys;
+        });
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (["w", "a", "s", "d"].includes(e.key)) {
+        setActiveKeys((prevKeys) => {
+          const newKeys = new Set(prevKeys);
+          newKeys.delete(e.key);
+          ws.current?.send(JSON.stringify({ type: "stopMovingPlayer", key: e.key }));
+          return newKeys;
+        });
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
     return () => {
       window.removeEventListener("resize", handleResize);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
       ws.current?.close();
     };
   }, []);
@@ -150,6 +190,10 @@ const App = () => {
     });
   };
 
+  const togglePlayerDisplay = () => {
+    setDisplayPlayer((prevDisplay) => !prevDisplay);
+  };
+
   return (
     <div
       className="App"
@@ -163,6 +207,9 @@ const App = () => {
         <button onClick={() => handleFontSizeChange(false)}>Font -</button>
         <button onClick={() => handleCircleRadiusChange(true)}>Circle +</button>
         <button onClick={() => handleCircleRadiusChange(false)}>Circle -</button>
+        <button onClick={togglePlayerDisplay}>
+          {displayPlayer ? "Hide Player" : "Show Player"}
+        </button>
       </div>
       {displayCircles ? (
         <>
@@ -202,6 +249,19 @@ const App = () => {
             </div>
           ))}
         </>
+      )}
+      {displayPlayer && player && (
+        <div
+          style={{
+            position: "absolute",
+            left: `${player.x}px`,
+            top: `${player.y}px`,
+            width: "50px",
+            height: "50px",
+            borderRadius: "50%",
+            backgroundColor: "white",
+          }}
+        ></div>
       )}
     </div>
   );
