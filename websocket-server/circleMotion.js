@@ -69,8 +69,8 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
 }
 
 module.exports = {
+  setCircleRadius,
   generateCircles,
   updateCircles,
   sendCirclePositions,
-  setCircleRadius,
 };

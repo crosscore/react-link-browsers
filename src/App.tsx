@@ -44,13 +44,17 @@ const colors = [
 
 const App = () => {
   const [circles, setCircles] = useState<Circle[]>([]);
-  const [charElements, setCharElements] = useState<CharElement[]>([]);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [fontSize, setFontSize] = useState(360);
   const [displayCircles, setDisplayCircles] = useState(true);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [circleRadius, setCircleRadius] = useState(120);
+  const [charElements, setCharElements] = useState<CharElement[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [fontSize, setFontSize] = useState(360);
   const [displayPlayer, setDisplayPlayer] = useState(false);
+  const [playerRadius, setPlayerRadius] = useState(0);
+  const [playerVisible, setPlayerVisible] = useState(false);
+  const [prevPlayerX, setPrevPlayerX] = useState(0);
+  const [prevPlayerY, setPrevPlayerY] = useState(0);
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeKeys, setActiveKeys] = useState(new Set());
   const [player, setPlayer] = useState<Player | null>(null);
@@ -118,8 +122,11 @@ const App = () => {
             setCircles([]);
             setCharElements([]);
           } else if (message.type === "player") {
-            const { id, x, y } = message.position;
+            const { id, x, y, visible } = message.position;
             setPlayer({ id, x, y });
+            setPlayerVisible(visible);
+          } else if (message.type === "playerRadius") {
+            setPlayerRadius(message.radius);
           }
         };
         ws.current.onclose = () => {
@@ -145,10 +152,13 @@ const App = () => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (["w", "a", "s", "d"].includes(e.key)) {
         setActiveKeys((prevKeys) => {
-          const newKeys = new Set(prevKeys);
-          newKeys.add(e.key);
-          ws.current?.send(JSON.stringify({ type: "startMovingPlayer", key: e.key }));
-          return newKeys;
+          if (!prevKeys.has(e.key)) {
+            const newKeys = new Set(prevKeys);
+            newKeys.add(e.key);
+            ws.current?.send(JSON.stringify({ type: "startMovingPlayer", key: e.key }));
+            return newKeys;
+          }
+          return prevKeys;
         });
       }
     };
@@ -156,10 +166,13 @@ const App = () => {
     const handleKeyUp = (e: KeyboardEvent) => {
       if (["w", "a", "s", "d"].includes(e.key)) {
         setActiveKeys((prevKeys) => {
-          const newKeys = new Set(prevKeys);
-          newKeys.delete(e.key);
-          ws.current?.send(JSON.stringify({ type: "stopMovingPlayer", key: e.key }));
-          return newKeys;
+          if (prevKeys.has(e.key)) {
+            const newKeys = new Set(prevKeys);
+            newKeys.delete(e.key);
+            ws.current?.send(JSON.stringify({ type: "stopMovingPlayer", key: e.key }));
+            return newKeys;
+          }
+          return prevKeys;
         });
       }
     };
@@ -175,6 +188,15 @@ const App = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (player) {
+      if (player.x !== prevPlayerX || player.y !== prevPlayerY) {
+        setPrevPlayerX(player.x);
+        setPrevPlayerY(player.y);
+      }
+    }
+  }, [player, prevPlayerX, prevPlayerY]);
+
   const toggleDisplay = () => {
     setDisplayCircles(!displayCircles);
   };
@@ -182,7 +204,10 @@ const App = () => {
   const handleFontSizeChange = (increase: boolean) => {
     setFontSize((prevSize) => {
       const newSize = increase ? prevSize * 1.25 : prevSize * 0.75;
-      ws.current?.send(JSON.stringify({ type: "fontSize", fontSize: newSize }));
+      ws.current?.send(JSON.stringify({
+        type: "fontSize",
+        fontSize: newSize,
+      }));
       return newSize;
     });
   };
@@ -190,7 +215,10 @@ const App = () => {
   const handleCircleRadiusChange = (increase: boolean) => {
     setCircleRadius((prevRadius) => {
       const newRadius = increase ? prevRadius * 1.25 : prevRadius * 0.75;
-      ws.current?.send(JSON.stringify({ type: "circleRadius", radius: newRadius }));
+      ws.current?.send(JSON.stringify({
+        type: "circleRadius",
+        radius: newRadius,
+      }));
       return newRadius;
     });
   };
@@ -198,7 +226,7 @@ const App = () => {
   const togglePlayerDisplay = () => {
     setDisplayPlayer((prevDisplay) => !prevDisplay);
   };
-
+  
   return (
     <div
       className="App"
@@ -255,16 +283,17 @@ const App = () => {
           ))}
         </>
       )}
-      {displayPlayer && player && (
+      {displayPlayer && player && playerVisible && (
         <div
           style={{
             position: "absolute",
             left: `${player.x}px`,
             top: `${player.y}px`,
-            width: "50px",
-            height: "50px",
+            width: `${playerRadius * 2}px`,
+            height: `${playerRadius * 2}px`,
             borderRadius: "50%",
-            backgroundColor: "white",
+            backgroundColor: "#F06292",
+            transition: "all 0.1s linear",
           }}
         ></div>
       )}

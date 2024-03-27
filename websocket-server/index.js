@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 const { generateCircles, updateCircles, sendCirclePositions, setCircleRadius } = require('./circleMotion');
 const { generateCharactors, updateCharactorPositions, sendCharactorPositions, setFontSize } = require('./stringMotion');
 const { getTotalWidth, getMaxWidth } = require('./utils');
-const { initializePlayerPosition, startUpdatingPlayerPosition, stopUpdatingPlayerPosition, sendPlayerPositions } = require("./playerMotion");
+const { initializePlayerPosition, startUpdatingPlayerPosition, stopUpdatingPlayerPosition, sendPlayerPositions, playerRadius } = require("./playerMotion");
 
 
 const PORT = 8080;
@@ -40,6 +40,8 @@ function startGenerations() {
 wss.on('connection', (ws) => {
   const clientId = uuidv4();
   console.log(`Client ${clientId} connected`);
+  ws.send(JSON.stringify({ type: "fontSize", fontSize: initialFontSize }))
+  ws.send(JSON.stringify({ type: "playerRadius", radius: playerRadius}))
   ws.on('message', (message) => {
     const msg = JSON.parse(message);
     if (msg.type === 'windowInfo') {
@@ -63,6 +65,11 @@ wss.on('connection', (ws) => {
         clientHeights.set(clientId, newHeight);
         console.log(`Client ${clientId} resized to ${newWidth}x${newHeight}`);
         startGenerations();
+      }
+    } else if (msg.type === 'circleRadius') {
+      const newRadius = parseFloat(msg.radius);
+      if (newRadius > 0) {
+        setCircleRadius(newRadius);
       }
     } else if (msg.type === 'fontSize') {
       const newFontSize = parseFloat(msg.fontSize);

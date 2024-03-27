@@ -4,12 +4,13 @@ const { getTotalWidth } = require("./utils");
 const players = new Map();
 
 const stepSize = 10;
+const playerRadius = 90;
 let intervalId = null;
 
 function initializePlayerPosition(clientWindowSize, clientID, clientWidths) {
   const totalWidth = getTotalWidth(clientWidths);
   const player = {
-    x: totalWidth / 2,
+    x: (totalWidth - playerRadius) / 2,
     y: clientWindowSize.innerHeight / 2,
     id: clientID,
     type: "player",
@@ -28,10 +29,10 @@ function updatePlayerPosition(activeKeys, clientID, clientWidths, clientHeight) 
   if (activeKeys.has("s")) player.y += stepSize;
   if (activeKeys.has("d")) player.x += stepSize;
 
-  if (player.x < 0) player.x += totalWidth;
-  if (player.x > totalWidth) player.x -= totalWidth;
+  if (player.x < playerRadius) player.x += totalWidth;
+  if (player.x > totalWidth - playerRadius) player.x -= totalWidth;
 
-  player.y = Math.max(0, Math.min(player.y, clientHeight)); // limit y position within the window
+  player.y = Math.max(playerRadius, Math.min(player.y, clientHeight - playerRadius));
 
   players.set(clientID, player);
 }
@@ -61,19 +62,21 @@ function sendPlayerPositions(wss, clientWidths, isOpen, clients) {
     if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) continue;
 
     const clientWidth = clientWidths.get(clientId);
-    const playerRadius = 100;
     const sendPosition = (player) => {
+      const position = {
+        id: player.id,
+        x: player.x - cumulativeWidth,
+        y: player.y,
+      };
       if (
         player.x + playerRadius > cumulativeWidth &&
-        player.x - playerRadius < cumulativeWidth + clientWidth * 2
+        player.x - playerRadius < cumulativeWidth + clientWidth
       ) {
-        const position = {
-          id: player.id,
-          x: player.x - cumulativeWidth,
-          y: player.y,
-        };
-        client.send(JSON.stringify({ type: player.type, position }));
+        position.visible = true;
+      } else {
+        position.visible = false;
       }
+      client.send(JSON.stringify({ type: player.type, position }));
     };
 
     players.forEach(sendPosition);
@@ -86,4 +89,5 @@ module.exports = {
   startUpdatingPlayerPosition,
   stopUpdatingPlayerPosition,
   sendPlayerPositions,
+  playerRadius,
 };
