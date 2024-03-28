@@ -1,12 +1,15 @@
 // websocket-server/circleMotion.js
 
 let circles = [];
-const circleLifetime = 12000;
 let circleRadius = 150;
 let nextCircleId = 0;
+let circleInterval = 1200;
+const circleLifetime = 12000;
 
 function setCircleRadius(newRadius) {
+  const scaleFactor = newRadius / circleRadius;
   circleRadius = newRadius;
+  circleInterval = Math.round(circleInterval / scaleFactor);
   circles.forEach((circle) => {
     circle.radius = circleRadius;
   });
@@ -26,10 +29,10 @@ function createCircle(totalWidth) {
   }, circleLifetime);
 }
 
-function generateCircles(totalWidth, interval = 1200) {
+function generateCircles(totalWidth) {
   return setInterval(() => {
     createCircle(totalWidth);
-  }, interval);
+  }, circleInterval);
 }
 
 function updateCircles() {
