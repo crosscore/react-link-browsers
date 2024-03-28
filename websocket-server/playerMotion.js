@@ -18,7 +18,12 @@ function initializePlayerPosition(clientWindowSize, clientID, clientWidths) {
   players.set(clientID, player);
 }
 
-function updatePlayerPosition(activeKeys, clientID, clientWidths, clientHeight) {
+function updatePlayerPosition(
+  activeKeys,
+  clientID,
+  clientWidths,
+  clientHeight
+) {
   const player = players.get(clientID);
   if (!player) return;
 
@@ -32,12 +37,23 @@ function updatePlayerPosition(activeKeys, clientID, clientWidths, clientHeight) 
   if (player.x < playerRadius) player.x += totalWidth;
   if (player.x > totalWidth - playerRadius) player.x -= totalWidth;
 
-  player.y = Math.max(playerRadius, Math.min(player.y, clientHeight - playerRadius));
+  player.y = Math.max(
+    playerRadius,
+    Math.min(player.y, clientHeight - playerRadius)
+  );
 
   players.set(clientID, player);
 }
 
-function startUpdatingPlayerPosition(activeKeys, wss, clientWidths, clientHeights, isOpen, clientID, clients) {
+function startUpdatingPlayerPosition(
+  activeKeys,
+  wss,
+  clientWidths,
+  clientHeights,
+  isOpen,
+  clientID,
+  clients
+) {
   if (intervalId !== null) {
     clearInterval(intervalId);
   }
@@ -55,33 +71,29 @@ function stopUpdatingPlayerPosition(clientID) {
   }
 }
 
-function sendPlayerPositions(wss, clientWidths, isOpen, clients) {
-  let cumulativeWidth = 0;
+function sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth = 0, index = 0) {
+  if (index >= clients.size) return;
 
-  for (const [client, clientId] of clients.entries()) {
-    if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) continue;
+  const [client, clientId] = Array.from(clients.entries())[index];
 
-    const clientWidth = clientWidths.get(clientId);
-    const sendPosition = (player) => {
-      const position = {
-        id: player.id,
-        x: player.x - cumulativeWidth,
-        y: player.y,
-      };
-      if (
-        player.x + playerRadius > cumulativeWidth &&
-        player.x - playerRadius < cumulativeWidth + clientWidth
-      ) {
-        position.visible = true;
-      } else {
-        position.visible = false;
-      }
-      client.send(JSON.stringify({ type: player.type, position }));
-    };
-
-    players.forEach(sendPosition);
-    cumulativeWidth += clientWidth;
+  if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) {
+    sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth + (clientWidths.get(clientId) || 0), index + 1);
+    return;
   }
+
+  const clientWidth = clientWidths.get(clientId);
+
+  players.forEach((player) => {
+    const position = {
+      id: player.id,
+      x: player.x - cumulativeWidth,
+      y: player.y,
+      visible: player.x + playerRadius > cumulativeWidth && player.x - playerRadius < cumulativeWidth + clientWidth,
+    };
+    client.send(JSON.stringify({ type: player.type, position }));
+  });
+
+  sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth + clientWidth, index + 1);
 }
 
 module.exports = {
