@@ -4,7 +4,7 @@ const { getTotalWidth } = require("./utils");
 const players = new Map();
 
 const stepSize = 10;
-const playerRadius = 90;
+const playerRadius = 30;
 let intervalId = null;
 
 function initializePlayerPosition(clientWindowSize, clientID, clientWidths) {

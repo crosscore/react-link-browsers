@@ -58,6 +58,7 @@ const App = () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [activeKeys, setActiveKeys] = useState(new Set());
   const [player, setPlayer] = useState<Player | null>(null);
+  const prevPlayerRef = useRef<Player | null>(null);
   const ws = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -123,7 +124,13 @@ const App = () => {
             setCharElements([]);
           } else if (message.type === "player") {
             const { id, x, y, visible } = message.position;
-            setPlayer({ id, x, y });
+            setPlayer((prevPlayer) => {
+              if (prevPlayer && prevPlayer.id === id) {
+                return { ...prevPlayer, x, y };
+              } else {
+                return { id, x, y };
+              }
+            });
             setPlayerVisible(visible);
           } else if (message.type === "playerRadius") {
             setPlayerRadius(message.radius);
@@ -196,6 +203,10 @@ const App = () => {
       }
     }
   }, [player, prevPlayerX, prevPlayerY]);
+
+  useEffect(() => {
+    prevPlayerRef.current = player;
+  }, [player]);
 
   const toggleDisplay = () => {
     setDisplayCircles(!displayCircles);
@@ -292,8 +303,8 @@ const App = () => {
             width: `${playerRadius * 2}px`,
             height: `${playerRadius * 2}px`,
             borderRadius: "50%",
-            backgroundColor: "#F06292",
-            transition: "all 0.1s linear",
+            backgroundColor: "#607d8b",
+            transition: prevPlayerRef.current ? "all 0.1s linear" : "none",
           }}
         ></div>
       )}
