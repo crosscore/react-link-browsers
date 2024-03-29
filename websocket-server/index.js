@@ -86,6 +86,12 @@ wss.on('connection', (ws) => {
       if (activeKeys.size === 0) {
         stopUpdatingPlayerPosition(clientId);
       }
+    } else if (msg.type === "displayPlayer") {
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({ type: "displayPlayer", display: msg.display }));
+        }
+      });
     }
   });
 

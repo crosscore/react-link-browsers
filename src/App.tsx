@@ -134,6 +134,8 @@ const App = () => {
             setPlayerVisible(visible);
           } else if (message.type === "playerRadius") {
             setPlayerRadius(message.radius);
+          } else if (message.type === "displayPlayer") {
+            setDisplayPlayer(message.display);
           }
         };
         ws.current.onclose = () => {
@@ -235,7 +237,9 @@ const App = () => {
   };
 
   const togglePlayerDisplay = () => {
-    setDisplayPlayer((prevDisplay) => !prevDisplay);
+    const newDisplay = !displayPlayer;
+    setDisplayPlayer(newDisplay);
+    ws.current?.send(JSON.stringify({ type: "displayPlayer", display: newDisplay }));
   };
   
   return (
