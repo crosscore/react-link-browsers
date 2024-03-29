@@ -2,7 +2,6 @@
 
 const { getTotalWidth } = require("./utils");
 const players = new Map();
-
 const stepSize = 10;
 const playerRadius = 60;
 let intervalId = null;
@@ -71,13 +70,27 @@ function stopUpdatingPlayerPosition(clientID) {
   }
 }
 
-function sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth = 0, index = 0) {
+function sendPlayerPositions(
+  wss,
+  clientWidths,
+  isOpen,
+  clients,
+  cumulativeWidth = 0,
+  index = 0
+) {
   if (index >= clients.size) return;
 
   const [client, clientId] = Array.from(clients.entries())[index];
 
   if (!clientId || !clientWidths.has(clientId) || !isOpen(client)) {
-    sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth + (clientWidths.get(clientId) || 0), index + 1);
+    sendPlayerPositions(
+      wss,
+      clientWidths,
+      isOpen,
+      clients,
+      cumulativeWidth + (clientWidths.get(clientId) || 0),
+      index + 1
+    );
     return;
   }
 
@@ -88,12 +101,21 @@ function sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth
       id: player.id,
       x: player.x - cumulativeWidth,
       y: player.y,
-      visible: player.x + playerRadius > cumulativeWidth - playerRadius && player.x - playerRadius < cumulativeWidth + clientWidth + playerRadius,
+      visible:
+        player.x + playerRadius > cumulativeWidth - playerRadius &&
+        player.x - playerRadius < cumulativeWidth + clientWidth + playerRadius,
     };
     client.send(JSON.stringify({ type: player.type, position }));
   });
 
-  sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth + clientWidth, index + 1);
+  sendPlayerPositions(
+    wss,
+    clientWidths,
+    isOpen,
+    clients,
+    cumulativeWidth + clientWidth,
+    index + 1
+  );
 }
 
 module.exports = {

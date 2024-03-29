@@ -7,7 +7,6 @@ const { generateCharactors, updateCharactorPositions, sendCharactorPositions, se
 const { getTotalWidth, getMaxWidth } = require('./utils');
 const { initializePlayerPosition, startUpdatingPlayerPosition, stopUpdatingPlayerPosition, sendPlayerPositions, playerRadius } = require("./playerMotion");
 
-
 const PORT = 8080;
 const wss = new WebSocket.Server({ port: PORT });
 const clientWidths = new Map();
