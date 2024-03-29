@@ -33,9 +33,17 @@ function updatePlayerPosition(
   if (activeKeys.has("s")) player.y += stepSize;
   if (activeKeys.has("d")) player.x += stepSize;
 
+  // If the player moves beyond the left edge of the total width,
+  // wrap the player's position to the right edge.
   if (player.x < -playerRadius) player.x = totalWidth - playerRadius;
+
+  // If the player moves beyond the right edge of the total width,
+  // wrap the player's position to the left edge.
   if (player.x > totalWidth - playerRadius) player.x = -playerRadius;
 
+  // Constrain the player's vertical movement within the client's height.
+  // Ensure the player stays within the top and bottom boundaries,
+  // taking into account the player's radius.
   player.y = Math.max(
     playerRadius,
     Math.min(player.y, clientHeight - playerRadius)
@@ -104,6 +112,11 @@ function sendPlayerPositions(
       visible:
         player.x + playerRadius > cumulativeWidth - playerRadius &&
         player.x - playerRadius < cumulativeWidth + clientWidth + playerRadius,
+        // Send player position information if the player is within the range
+        // of the current client's width, considering an additional player radius
+        // on both sides. This ensures that the player is sent to the client when
+        // it is fully or partially visible within the client's screen, providing
+        // a smooth transition when the player moves between clients.
     };
     client.send(JSON.stringify({ type: player.type, position }));
   });

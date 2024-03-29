@@ -73,6 +73,11 @@ function sendCharactorPositions(wss, isOpen, clients, clientWidths, maxWidth) {
       const adjustedX = charElement.x - adjustedWidth;
 
       if (adjustedX + charElement.fontSize > 0 && adjustedX < clientWidth) {
+      // Send character information if its right edge is within the range of
+      // the current client's width. This ensures that characters are sent
+      // to the client when they are fully visible within the client's screen.
+      // Unlike circles, characters are not sent if they are partially visible
+      // to prevent characters from being cut off at the edges of the screen.
         client.send(JSON.stringify({
           type: "updateCharactor",
           data: { id: charElement.id, char: charElement.char, x: adjustedX, y: charElement.y, clientId: clientId, fontSize: charElement.fontSize },
