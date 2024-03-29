@@ -4,7 +4,7 @@ const { getTotalWidth } = require("./utils");
 const players = new Map();
 
 const stepSize = 10;
-const playerRadius = 30;
+const playerRadius = 60;
 let intervalId = null;
 
 function initializePlayerPosition(clientWindowSize, clientID, clientWidths) {
@@ -34,8 +34,8 @@ function updatePlayerPosition(
   if (activeKeys.has("s")) player.y += stepSize;
   if (activeKeys.has("d")) player.x += stepSize;
 
-  if (player.x < playerRadius) player.x += totalWidth;
-  if (player.x > totalWidth - playerRadius) player.x -= totalWidth;
+  if (player.x < -playerRadius) player.x += totalWidth;
+  if (player.x > totalWidth + playerRadius) player.x -= totalWidth;
 
   player.y = Math.max(
     playerRadius,
@@ -88,7 +88,7 @@ function sendPlayerPositions(wss, clientWidths, isOpen, clients, cumulativeWidth
       id: player.id,
       x: player.x - cumulativeWidth,
       y: player.y,
-      visible: player.x + playerRadius > cumulativeWidth && player.x - playerRadius < cumulativeWidth + clientWidth,
+      visible: player.x + playerRadius > cumulativeWidth - playerRadius && player.x - playerRadius < cumulativeWidth + clientWidth + playerRadius,
     };
     client.send(JSON.stringify({ type: player.type, position }));
   });
