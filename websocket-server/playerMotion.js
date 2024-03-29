@@ -33,8 +33,8 @@ function updatePlayerPosition(
   if (activeKeys.has("s")) player.y += stepSize;
   if (activeKeys.has("d")) player.x += stepSize;
 
-  if (player.x < -playerRadius) player.x += totalWidth;
-  if (player.x > totalWidth + playerRadius) player.x -= totalWidth;
+  if (player.x < -playerRadius) player.x = totalWidth - playerRadius;
+  if (player.x > totalWidth - playerRadius) player.x = -playerRadius;
 
   player.y = Math.max(
     playerRadius,
