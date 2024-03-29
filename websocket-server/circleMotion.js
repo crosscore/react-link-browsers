@@ -53,6 +53,11 @@ function sendCirclePositions(wss, isOpen, clientWidths, clients) {
       if (
         circle.x + circle.radius > cumulativeWidth &&
         circle.x - circle.radius < cumulativeWidth + clientWidth * 2
+        // Send circle information if its left edge is within the range of
+        // the current client's width plus an additional client width.
+        // This ensures that circles are sent to the client even if they
+        // are partially visible and provides a buffer to prevent flickering
+        // when resizing the browser window.
       ) {
         client.send(
           JSON.stringify({
